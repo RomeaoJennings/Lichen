@@ -27,6 +27,13 @@ namespace Typhoon.Model
         private int[] squares;
         private int playerToMove;
 
+        public int Opponent { get { return playerToMove == WHITE ? BLACK : WHITE; } }
+
+        public Bitboard AllPiecesBitboard
+        {
+            get { return pieces[WHITE, ALL_PIECES] | pieces[BLACK, ALL_PIECES]; }
+        }
+
         public Board()
         {
             NewGame();
@@ -56,6 +63,8 @@ namespace Typhoon.Model
             InitPieceSquares();
         }
 
+        
+
         private void InitPieceSquares()
         {
             squares = new int[NUM_SQUARES];
@@ -76,6 +85,38 @@ namespace Typhoon.Model
                     }
                 }
             }
+        }
+
+
+
+        public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int sourceSquare)
+        {
+            while (attacks != 0)
+            {
+                int destinationSquare = Bitboards.BitScanForward(attacks);
+                Bitboards.PopLsb(ref attacks);
+                list.Add(new Move(sourceSquare, destinationSquare, squares[destinationSquare]));
+            }
+        }
+
+        public void GetStepPieceMoves(List<Move> list, Bitboard moves, int square, Bitboard destinationBitboard)
+        {
+            Bitboard attacks = moves & destinationBitboard;
+            GenerateMovesFromBitboard(list, attacks, square);
+        }
+
+        public void GetSlidingPieceMoves(List<Move> list, int pieceType, int square, Bitboard destinationBitboard)
+        {
+            Bitboard attacks = 0;
+            if (pieceType == ROOK || pieceType == QUEEN)
+            {
+                attacks = Bitboards.GetRookMoveBitboard(square, destinationBitboard);
+            }
+            if (pieceType == BISHOP || pieceType == QUEEN)
+            {
+                attacks |= Bitboards.GetBishopMoveBitboard(square, destinationBitboard);
+            }
+            GenerateMovesFromBitboard(list, attacks, square);
         }
 
         #region Equality and HashCode Functions

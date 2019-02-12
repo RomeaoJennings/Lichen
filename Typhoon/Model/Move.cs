@@ -8,7 +8,13 @@ namespace Typhoon.Model
 {
     public struct Move
     {
-        int destination;
-        int source;
+        public int SourceSquare;
+        public int DestinationSquare;
+
+        public Move(int source, int destination)
+        {
+            SourceSquare = source;
+            DestinationSquare = destination;
+        }
     }
 }

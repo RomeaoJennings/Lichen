@@ -8,25 +8,7 @@ namespace TyphoonTests
     [TestClass]
     public class BitboardsTests
     { 
-        [TestMethod]
-        [TestCategory("Bitboards")]
-        public void Test_GetCol_WithValidSquareNumbers()
-        {
-            Assert.AreEqual(Bitboards.GetColumn(0), 7);
-            Assert.AreEqual(Bitboards.GetColumn(47), 0);
-            Assert.AreEqual(Bitboards.GetColumn(4), 3);
-            Assert.AreEqual(Bitboards.GetColumn(58), 5);
-        }
-
-        [TestMethod]
-        [TestCategory("Bitboards")]
-        public void Test_GetRow_WithValidSquareNumbers()
-        {
-            Assert.AreEqual(Bitboards.GetRow(5), 7);
-            Assert.AreEqual(Bitboards.GetRow(63), 0);
-            Assert.AreEqual(Bitboards.GetRow(42), 2);
-            Assert.AreEqual(Bitboards.GetRow(25), 4);
-        }
+        
 
         [TestMethod]
         [TestCategory("Bitboards")]
