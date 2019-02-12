@@ -87,7 +87,10 @@ namespace Typhoon.Model
             }
         }
 
-
+        public void GetMoves()
+        {
+            List<Move> moves = new List<Move>();
+        }
 
         public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int sourceSquare)
         {
@@ -117,6 +120,14 @@ namespace Typhoon.Model
                 attacks |= Bitboards.GetBishopMoveBitboard(square, destinationBitboard);
             }
             GenerateMovesFromBitboard(list, attacks, square);
+        }
+
+        public void GetPawnMoves(List<Move> list, int color, Bitboard destinationBitboard)
+        {
+            // TODO: EnPassent
+            // TODO: Promotion
+
+
         }
 
         #region Equality and HashCode Functions
@@ -163,5 +174,10 @@ namespace Typhoon.Model
         }
 
         #endregion
+        
+        public static Board FromFEN()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
