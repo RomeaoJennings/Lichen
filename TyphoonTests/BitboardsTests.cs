@@ -117,8 +117,6 @@ namespace TyphoonTests
             occupancyBitboard = 0x356A829C31CABB6AUL;
             square = 36;
             Assert.AreEqual(0x244280028040200UL, Bitboards.GetBishopMoveBitboard(square, occupancyBitboard));
-
-
         }
 
         [TestMethod]

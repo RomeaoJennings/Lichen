@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
-    class Move
+    public struct Move
     {
+        int destination;
+        int source;
     }
 }

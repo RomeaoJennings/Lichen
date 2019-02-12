@@ -36,6 +36,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -51,6 +52,7 @@
     <Compile Include="BitboardsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MagicBitboardFactoryTests.cs" />
+    <Compile Include="BoardTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
