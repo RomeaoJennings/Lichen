@@ -55,6 +55,7 @@
     <Compile Include="BoardTests.cs" />
     <Compile Include="CastleRightsTests.cs" />
     <Compile Include="TestUtils.cs" />
+    <Compile Include="BoardMoveGenerationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

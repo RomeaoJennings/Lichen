@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,83 @@ namespace Typhoon.Model
         public const int KNIGHT = 4;
         public const int PAWN = 5;
         public const int ALL_PIECES = 6;
+
+        #region SquareNames
+
+        public const int A1 = 7;
+        public const int B1 = 6;
+        public const int C1 = 5;
+        public const int D1 = 4;
+        public const int E1 = 3;
+        public const int F1 = 2;
+        public const int G1 = 1;
+        public const int H1 = 0;
+
+        public const int A2 = 15;
+        public const int B2 = 14;
+        public const int C2 = 13;
+        public const int D2 = 12;
+        public const int E2 = 11;
+        public const int F2 = 10;
+        public const int G2 = 9;
+        public const int H2 = 8;
+
+        public const int A3 = 23;
+        public const int B3 = 22;
+        public const int C3 = 21;
+        public const int D3 = 20;
+        public const int E3 = 19;
+        public const int F3 = 18;
+        public const int G3 = 17;
+        public const int H3 = 16;
+
+        public const int A4 = 31;
+        public const int B4 = 30;
+        public const int C4 = 29;
+        public const int D4 = 28;
+        public const int E4 = 27;
+        public const int F4 = 26;
+        public const int G4 = 25;
+        public const int H4 = 24;
+
+        public const int A5 = 39;
+        public const int B5 = 38;
+        public const int C5 = 37;
+        public const int D5 = 36;
+        public const int E5 = 35;
+        public const int F5 = 34;
+        public const int G5 = 33;
+        public const int H5 = 32;
+
+        public const int A6 = 47;
+        public const int B6 = 46;
+        public const int C6 = 45;
+        public const int D6 = 44;
+        public const int E6 = 43;
+        public const int F6 = 42;
+        public const int G6 = 41;
+        public const int H6 = 40;
+
+        public const int A7 = 55;
+        public const int B7 = 54;
+        public const int C7 = 53;
+        public const int D7 = 52;
+        public const int E7 = 51;
+        public const int F7 = 50;
+        public const int G7 = 49;
+        public const int H7 = 48;
+
+        public const int A8 = 63;
+        public const int B8 = 62;
+        public const int C8 = 61;
+        public const int D8 = 60;
+        public const int E8 = 59;
+        public const int F8 = 58;
+        public const int G8 = 57;
+        public const int H8 = 56;
+
+        #endregion
+
 
         private Bitboard[,] pieces;
         private int[] squares;
@@ -101,7 +179,7 @@ namespace Typhoon.Model
                     Bitboard curr = pieces[side, piece];
                     while (curr != 0)
                     {
-                        squares[Bitboards.BitScanForward(curr)] = piece;
+                        squares[curr.BitScanForward()] = piece;
                         Bitboards.PopLsb(ref curr);
                     }
                 }
@@ -129,29 +207,46 @@ namespace Typhoon.Model
         {
             while (attacks != 0)
             {
-                int destinationSquare = Bitboards.BitScanForward(attacks);
+                int destinationSquare = attacks.BitScanForward();
                 Bitboards.PopLsb(ref attacks);
                 list.Add(new Move(sourceSquare, destinationSquare, squares[destinationSquare]));
             }
         }
 
-        public void GetStepPieceMoves(List<Move> list, Bitboard moves, int square, Bitboard destinationBitboard)
+        public void GetAllStepPieceMoves(List<Move> list, int pieceType, int color, Bitboard destinationBitboard)
         {
-            Bitboard attacks = moves & destinationBitboard;
-            GenerateMovesFromBitboard(list, attacks, square);
+            Debug.Assert(pieceType == KING || pieceType == KNIGHT);
+            Debug.Assert(color == WHITE || color == BLACK);
+
+            Bitboard[] attackBitboards = pieceType == KING ? Bitboards.KingBitboards : Bitboards.KnightBitboards;
+
+            Bitboard piece = pieces[color, pieceType];
+            while (piece != 0)
+            {
+                int square = piece.BitScanForward();
+                Bitboards.PopLsb(ref piece);
+                Bitboard attacksBitboard = attackBitboards[square] & destinationBitboard;
+                GenerateMovesFromBitboard(list, attacksBitboard, square);
+            }
         }
 
-        public void GetSlidingPieceMoves(List<Move> list, int pieceType, int square, Bitboard destinationBitboard)
+        public void GetSlidingPieceMoves(
+            List<Move> list,
+            int pieceType,
+            int square,
+            Bitboard allPieces,
+            Bitboard destinationBitboard)
         {
             Bitboard attacks = 0;
             if (pieceType == ROOK || pieceType == QUEEN)
             {
-                attacks = Bitboards.GetRookMoveBitboard(square, destinationBitboard);
+                attacks = Bitboards.GetRookMoveBitboard(square, allPieces);
             }
             if (pieceType == BISHOP || pieceType == QUEEN)
             {
-                attacks |= Bitboards.GetBishopMoveBitboard(square, destinationBitboard);
+                attacks |= Bitboards.GetBishopMoveBitboard(square, allPieces);
             }
+            attacks &= destinationBitboard;
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
@@ -237,7 +332,7 @@ namespace Typhoon.Model
                 int square = 63;
                 // Process squares
                 foreach (char curr in squares)
-                { 
+                {
                     // Blank Squares
                     if (curr >= '0' && curr <= '9')
                     {
@@ -245,7 +340,7 @@ namespace Typhoon.Model
                         continue;
                     }
                     // Black Pieces
-                    else if (curr >='b' && curr <= 'r')
+                    else if (curr >= 'b' && curr <= 'r')
                     {
                         Bitboard toAdd = Bitboards.SquareBitboards[square];
                         result.pieces[BLACK, blackPieces.IndexOf(curr)] |= toAdd;

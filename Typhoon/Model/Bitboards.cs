@@ -31,7 +31,7 @@ namespace Typhoon.Model
         public static readonly Bitboard[,] PawnAttkBitboards = new Bitboard[2, NUM_SQUARES];
 
         private const Bitboard DeBruijnSequence = 0x37E84A99DAE458F;
-        private static readonly int[] MultiplyDeBruijnBitPosition = 
+        private static readonly int[] MultiplyDeBruijnBitPosition =
         {
             0,  1, 17,  2, 18, 50,  3, 57,
             47, 19, 22, 51, 29,  4, 33, 58,
@@ -43,7 +43,7 @@ namespace Typhoon.Model
             61, 44, 12, 35, 60, 11, 10,  9,
         };
 
-        public static readonly Bitboard[] RookMagics = 
+        public static readonly Bitboard[] RookMagics =
         {
             0x4080019028834000UL, 0x2100144000210184UL, 0x1200120060809840UL, 0x0300081000600700UL,
             0x0200200600104408UL, 0x1300240003002218UL, 0x020008120002812CUL, 0x4180052140801900UL,
@@ -63,7 +63,7 @@ namespace Typhoon.Model
             0x181A0010780C6006UL, 0x2802000550840802UL, 0x2182821819300084UL, 0x2654038D06240142UL
         };
 
-        public static readonly int[] RookShifts = 
+        public static readonly int[] RookShifts =
         {
             52, 53, 53, 53, 53, 53, 53, 52,
             54, 54, 54, 54, 54, 54, 54, 53,
@@ -98,7 +98,7 @@ namespace Typhoon.Model
             0x0000700410020210UL, 0x0013412034902988UL, 0x4C1920887D471402UL, 0x016E024408120140UL,
         };
 
-        public static readonly int[] BishopShifts = 
+        public static readonly int[] BishopShifts =
         {
             58, 59, 59, 59, 59, 59, 59, 58,
             59, 59, 59, 59, 59, 59, 59, 59,
@@ -127,7 +127,8 @@ namespace Typhoon.Model
             return BishopMoves[square][index];
         }
 
-        static Bitboards() {
+        static Bitboards()
+        {
             InitSquareDistances();
             InitSquareBitboards();
             InitRowBitboards();
@@ -160,7 +161,7 @@ namespace Typhoon.Model
         {
             for (int sq1 = 0; sq1 < NUM_SQUARES; sq1++)
             {
-                for (int sq2 = 0;sq2<=sq1;sq2++)
+                for (int sq2 = 0; sq2 <= sq1; sq2++)
                 {
                     int rowDist = Math.Abs(GetRow(sq1) - GetRow(sq2));
                     int colDist = Math.Abs(GetColumn(sq1) - GetColumn(sq2));
@@ -215,7 +216,7 @@ namespace Typhoon.Model
 
         private static void InitDiagonalBitboards()
         {
-            for (int i=0;i<NUM_SQUARES;i++)
+            for (int i = 0; i < NUM_SQUARES; i++)
             {
                 FrontDiagonalBitboards[i] = GenerateDiagonalBitboard(i, 7);
                 BackDiagonalBitboards[i] = GenerateDiagonalBitboard(i, 9);
@@ -227,7 +228,7 @@ namespace Typhoon.Model
             Debug.Assert(square >= 0 && square < 64);
 
             Bitboard result = SquareBitboards[square];
-            for (int i=0;i<2;i++) // Two passes, each in opposite directions
+            for (int i = 0; i < 2; i++) // Two passes, each in opposite directions
             {
                 int curr = square;
                 int next = curr + offset;
@@ -247,7 +248,7 @@ namespace Typhoon.Model
             int[] offsets = { -9, -8, -7, -1, 1, 7, 8, 9 };
             for (int square = 0; square < NUM_SQUARES; square++)
             {
-                KingBitboards[square] = GenerateBitboardFromOffsets(square,1,offsets);
+                KingBitboards[square] = GenerateBitboardFromOffsets(square, 1, offsets);
             }
         }
 
@@ -289,7 +290,7 @@ namespace Typhoon.Model
             foreach (int offset in offsets)
             {
                 int currSquare = square + offset;
-                if (currSquare >=0 && currSquare < NUM_SQUARES && SquareDistance[currSquare,square] <= maxDistance)
+                if (currSquare >= 0 && currSquare < NUM_SQUARES && SquareDistance[currSquare, square] <= maxDistance)
                 {
                     result |= SquareBitboards[currSquare];
                 }
@@ -320,15 +321,15 @@ namespace Typhoon.Model
             return cnt;
         }
 
-        public static int BitScanForward(Bitboard bitboard)
-        {
-            Debug.Assert(bitboard != 0);
-            return MultiplyDeBruijnBitPosition[((ulong)((long)bitboard & -(long)bitboard) * DeBruijnSequence) >> 58];
-        }
-
         public static void PopLsb(ref Bitboard bitboard)
         {
             bitboard &= (bitboard - 1);
+        }
+
+        public static int BitScanForward(this Bitboard bitboard)
+        {
+            Debug.Assert(bitboard != 0);
+            return MultiplyDeBruijnBitPosition[((ulong)((long)bitboard & -(long)bitboard) * DeBruijnSequence) >> 58];
         }
 
         public static int GetSquareFromName(string name)
@@ -336,6 +337,15 @@ namespace Typhoon.Model
             int col = name[0] - 'a';
             int row = name[1] - '1';
             return 8 * row + (7 - col);
+        }
+
+        public static string GetNameFromSquare(int square)
+        {
+            Debug.Assert(square >= 0 && square < NUM_SQUARES);
+
+            char rank = (char)('a' + (7 - square % 8));
+            char file = (char)('1' + (square / 8));
+            return rank.ToString() + file;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace TyphoonTests
 
     [TestClass]
     public class BitboardsTests
-    { 
+    {
         [TestMethod]
         [TestCategory("Bitboards")]
         public void Test_SquareDistance()
@@ -46,7 +46,8 @@ namespace TyphoonTests
 
         [TestMethod]
         [TestCategory("Bitboards")]
-        public void Test_KingBitboards() {
+        public void Test_KingBitboards()
+        {
             Assert.AreEqual(Bitboards.KingBitboards[63], 0x40C0000000000000UL);
             Assert.AreEqual(Bitboards.KingBitboards[0], 0x302UL);
             Assert.AreEqual(Bitboards.KingBitboards[45], 0x70507000000000UL);
@@ -141,6 +142,15 @@ namespace TyphoonTests
             Assert.AreEqual(55, Bitboards.GetSquareFromName("a7"));
             Assert.AreEqual(56, Bitboards.GetSquareFromName("h8"));
             Assert.AreEqual(17, Bitboards.GetSquareFromName("g3"));
+        }
+
+        [TestMethod]
+        [TestCategory("Bitboards")]
+        public void Test_GetNameFromSquare()
+        {
+            Assert.AreEqual("a8", Bitboards.GetNameFromSquare(Board.A8));
+            Assert.AreEqual("d4", Bitboards.GetNameFromSquare(Board.D4));
+            Assert.AreEqual("g6", Bitboards.GetNameFromSquare(Board.G6));
         }
     }
 }
