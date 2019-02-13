@@ -54,6 +54,7 @@
     <Compile Include="MagicBitboardFactoryTests.cs" />
     <Compile Include="BoardTests.cs" />
     <Compile Include="CastleRightsTests.cs" />
+    <Compile Include="TestUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

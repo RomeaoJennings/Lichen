@@ -26,12 +26,25 @@ namespace Typhoon.Model
         private Bitboard[,] pieces;
         private int[] squares;
         private int playerToMove;
+        private CastleRights castleRights;
+        private int halfMoveClock;
+        private int fullMoveNumber;
 
         public int Opponent { get { return playerToMove == WHITE ? BLACK : WHITE; } }
 
         public Bitboard AllPiecesBitboard
         {
             get { return pieces[WHITE, ALL_PIECES] | pieces[BLACK, ALL_PIECES]; }
+        }
+
+        public int HalfMoveClock
+        {
+            get { return halfMoveClock; }
+        }
+
+        public int FullMoveNumber
+        {
+            get { return fullMoveNumber; }
         }
 
         public Board()
@@ -42,6 +55,9 @@ namespace Typhoon.Model
         private void NewGame()
         {
             playerToMove = WHITE;
+            castleRights = CastleRights.All;
+            fullMoveNumber = 1;
+            halfMoveClock = 0;
 
             pieces = new Bitboard[2, 7];
             pieces[WHITE, PAWN] = 0xFF00UL;
@@ -63,8 +79,6 @@ namespace Typhoon.Model
             InitPieceSquares();
         }
 
-        
-
         private void InitPieceSquares()
         {
             squares = new int[NUM_SQUARES];
@@ -85,6 +99,18 @@ namespace Typhoon.Model
                     }
                 }
             }
+        }
+
+        public Bitboard GetPieceBitboard(int color, int pieceType)
+        {
+            return pieces[color, pieceType];
+        }
+
+        public int[] GetPieceSquares()
+        {
+            int[] result = new int[64];
+            Array.Copy(squares, result, NUM_SQUARES);
+            return result;
         }
 
         public void GetMoves()
@@ -145,6 +171,16 @@ namespace Typhoon.Model
                 if (b1.pieces[BLACK, i] != b2.pieces[BLACK, i])
                     return false;
             }
+
+            if (b1.castleRights != b2.castleRights)
+                return false;
+
+            if (b1.halfMoveClock != b2.halfMoveClock)
+                return false;
+
+            if (b1.fullMoveNumber != b2.fullMoveNumber)
+                return false;
+
             return true;
         }
 
@@ -170,14 +206,65 @@ namespace Typhoon.Model
                 hashCode ^= pieces[WHITE, i].GetHashCode();
                 hashCode ^= pieces[BLACK, i].GetHashCode();
             }
+            hashCode ^= castleRights.GetHashCode();
+            hashCode ^= fullMoveNumber;
+            hashCode ^= halfMoveClock;
             return hashCode;
         }
 
         #endregion
-        
-        public static Board FromFEN()
+
+        public static Board FromFEN(string fen)
         {
-            throw new NotImplementedException();
+            Board result = new Board();
+            result.pieces = new Bitboard[2, 7];
+            const string whitePieces = "KQRBNP";
+            const string blackPieces = "kqrbnp";
+            try
+            {
+                string[] elements = fen.Split(' ');
+                string squares = elements[0].Replace("/", string.Empty);
+                int square = 63;
+                // Process squares
+                foreach (char curr in squares)
+                { 
+                    // Blank Squares
+                    if (curr >= '0' && curr <= '9')
+                    {
+                        square -= int.Parse(curr.ToString());
+                        continue;
+                    }
+                    // Black Pieces
+                    else if (curr >='b' && curr <= 'r')
+                    {
+                        Bitboard toAdd = Bitboards.SquareBitboards[square];
+                        result.pieces[BLACK, blackPieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[BLACK, ALL_PIECES] |= toAdd;
+                    }
+                    // White Pieces
+                    else
+                    {
+                        Bitboard toAdd = Bitboards.SquareBitboards[square];
+                        result.pieces[WHITE, whitePieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[WHITE, ALL_PIECES] |= toAdd;
+                    }
+                    square--;
+                }
+                result.InitPieceSquares();
+
+                result.playerToMove = elements[1] == "w" ? WHITE : BLACK;
+                result.castleRights = CastleRights.FromFEN(elements[2]);
+
+                //TODO: EnPassent Processing
+     
+                result.halfMoveClock = int.Parse(elements[4]);
+                result.fullMoveNumber = int.Parse(elements[5]);
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Invalid FEN string: {fen}", e);
+            }
         }
     }
 }

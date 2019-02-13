@@ -10,12 +10,6 @@ namespace TyphoonTests
     [TestCategory("Magics")]
     public class MagicBitboardFactoryTests
     {
-        private void TestArrayEquality<T>(T[] expected, T[] actual)
-        {
-            Assert.AreEqual(expected.Length, actual.Length, "Arrays are not the same length");
-            for (int i = 0; i < expected.Length; i++)
-                Assert.AreEqual(expected[i], actual[i], $"Error at index: {i}");
-        }
 
         [TestMethod]
         [TestCategory("Magics")]
@@ -47,11 +41,11 @@ namespace TyphoonTests
         {
             int[] expected = { 0, 2, 6, 8, 9, 13, 16 };
             int[] actual = MagicBitboardFactory.GenerateOffsets(0x12345UL);
-            TestArrayEquality(expected, actual);
+            TestUtils.TestArrayEquality(expected, actual);
 
             expected = new int[] { 32, 37, 40, 41, 46 };
             actual = MagicBitboardFactory.GenerateOffsets(0x432100000000UL);
-            TestArrayEquality(expected, actual);
+            TestUtils.TestArrayEquality(expected, actual);
         }
 
         [TestMethod]
@@ -60,7 +54,7 @@ namespace TyphoonTests
         {
             Bitboard[] expected = { 0, 1, 2, 3, 0x0000008000000000UL, 0x0000008000000001UL, 0x0000008000000002UL, 0x0000008000000003UL };
             Bitboard[] actual = MagicBitboardFactory.GeneratePermutations(0x8000000003UL);
-            TestArrayEquality(expected, actual);
+            TestUtils.TestArrayEquality(expected, actual);
         }
     }
 }

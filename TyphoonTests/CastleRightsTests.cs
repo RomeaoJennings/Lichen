@@ -48,5 +48,18 @@ namespace TyphoonTests
                 Assert.AreEqual(c1 == c2, c1.GetHashCode() == c2.GetHashCode());
             }
         }
+
+        [TestMethod]
+        [TestCategory("CastleRights")]
+        public void Test_FromFEN()
+        {
+            Assert.AreEqual(CastleRights.All, CastleRights.FromFEN("KQkq"));
+            Assert.AreNotEqual(CastleRights.All, CastleRights.FromFEN("KQk"));
+            Assert.AreNotEqual(CastleRights.All, CastleRights.FromFEN("-"));
+
+            CastleRights cr = new CastleRights(true, false, false, false);
+            Assert.AreEqual(cr, CastleRights.FromFEN("K"));
+            Assert.AreNotEqual(cr, CastleRights.FromFEN("k"));
+        }
     }
 }
