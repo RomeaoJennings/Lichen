@@ -8,8 +8,6 @@ namespace TyphoonTests
     [TestClass]
     public class BitboardsTests
     { 
-        
-
         [TestMethod]
         [TestCategory("Bitboards")]
         public void Test_SquareDistance()
@@ -133,6 +131,16 @@ namespace TyphoonTests
             Assert.AreEqual(10, Bitboards.CountBits(0x3578900000000UL));
             Assert.AreEqual(0, Bitboards.CountBits(0));
             Assert.AreEqual(64, Bitboards.CountBits(0xFFFFFFFFFFFFFFFFUL));
+        }
+
+        [TestMethod]
+        [TestCategory("Bitboards")]
+        public void Test_GetSquareFromName()
+        {
+            Assert.AreEqual(7, Bitboards.GetSquareFromName("a1"));
+            Assert.AreEqual(55, Bitboards.GetSquareFromName("a7"));
+            Assert.AreEqual(56, Bitboards.GetSquareFromName("h8"));
+            Assert.AreEqual(17, Bitboards.GetSquareFromName("g3"));
         }
     }
 }

@@ -29,6 +29,7 @@ namespace Typhoon.Model
         private CastleRights castleRights;
         private int halfMoveClock;
         private int fullMoveNumber;
+        private Bitboard enPassentBitboard;
 
         public int Opponent { get { return playerToMove == WHITE ? BLACK : WHITE; } }
 
@@ -47,6 +48,11 @@ namespace Typhoon.Model
             get { return fullMoveNumber; }
         }
 
+        public Bitboard EnPassentBitboard
+        {
+            get { return enPassentBitboard; }
+        }
+
         public Board()
         {
             NewGame();
@@ -58,6 +64,7 @@ namespace Typhoon.Model
             castleRights = CastleRights.All;
             fullMoveNumber = 1;
             halfMoveClock = 0;
+            enPassentBitboard = 0;
 
             pieces = new Bitboard[2, 7];
             pieces[WHITE, PAWN] = 0xFF00UL;
@@ -180,6 +187,8 @@ namespace Typhoon.Model
 
             if (b1.fullMoveNumber != b2.fullMoveNumber)
                 return false;
+            if (b1.enPassentBitboard != b2.enPassentBitboard)
+                return false;
 
             return true;
         }
@@ -209,6 +218,7 @@ namespace Typhoon.Model
             hashCode ^= castleRights.GetHashCode();
             hashCode ^= fullMoveNumber;
             hashCode ^= halfMoveClock;
+            hashCode ^= enPassentBitboard.GetHashCode();
             return hashCode;
         }
 
@@ -254,9 +264,11 @@ namespace Typhoon.Model
 
                 result.playerToMove = elements[1] == "w" ? WHITE : BLACK;
                 result.castleRights = CastleRights.FromFEN(elements[2]);
-
-                //TODO: EnPassent Processing
-     
+                result.enPassentBitboard = 0;
+                if (elements[3] != "-")
+                {
+                    result.enPassentBitboard = Bitboards.SquareBitboards[Bitboards.GetSquareFromName(elements[3])];
+                }
                 result.halfMoveClock = int.Parse(elements[4]);
                 result.fullMoveNumber = int.Parse(elements[5]);
                 return result;

@@ -12,6 +12,7 @@ namespace TyphoonTests
         Board differentCastleRights = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1");
         Board differentHalfMoveCounter = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 5 1");
         Board differentFullMoveNum = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 2");
+        Board differentEnPassent = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq e5 0 1");
 
         [TestMethod]
         [TestCategory("Board")]
@@ -25,6 +26,7 @@ namespace TyphoonTests
             Assert.AreNotEqual(true, b1 == differentCastleRights);
             Assert.AreNotEqual(true, b1 == differentHalfMoveCounter);
             Assert.AreNotEqual(true, b1 == differentFullMoveNum);
+            Assert.AreNotEqual(true, b1 == differentEnPassent);
         }
 
         [TestMethod]
@@ -36,6 +38,7 @@ namespace TyphoonTests
             Assert.AreNotEqual(b1.GetHashCode(), differentCastleRights.GetHashCode());
             Assert.AreNotEqual(b1.GetHashCode(), differentFullMoveNum.GetHashCode());
             Assert.AreNotEqual(b1.GetHashCode(), differentHalfMoveCounter.GetHashCode());
+            Assert.AreNotEqual(b1.GetHashCode(), differentEnPassent.GetHashCode());
         }
 
         [TestMethod]
@@ -56,7 +59,7 @@ namespace TyphoonTests
             TestUtils.TestArrayEquality(b.GetPieceSquares(), startingPos.GetPieceSquares());
             Assert.AreEqual(b.FullMoveNumber, startingPos.FullMoveNumber);
             Assert.AreEqual(b.HalfMoveClock, startingPos.HalfMoveClock);
-            //TODO: EnPassent Testing
+            Assert.AreEqual(b.EnPassentBitboard, startingPos.EnPassentBitboard);
 
             Assert.AreEqual(0x8UL, sicilian.GetPieceBitboard(Board.WHITE, Board.KING));
             Assert.AreEqual(0x10UL, sicilian.GetPieceBitboard(Board.WHITE, Board.QUEEN));
@@ -76,7 +79,7 @@ namespace TyphoonTests
 
             Assert.AreEqual(1, sicilian.HalfMoveClock);
             Assert.AreEqual(2, sicilian.FullMoveNumber);
-            // Todo: EnPassent
+            Assert.AreEqual(0UL, sicilian.EnPassentBitboard);
 
             int[] squares = sicilian.GetPieceSquares();
             Assert.AreEqual(squares[37], Board.PAWN);

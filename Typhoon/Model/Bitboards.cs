@@ -330,5 +330,12 @@ namespace Typhoon.Model
         {
             bitboard &= (bitboard - 1);
         }
+
+        public static int GetSquareFromName(string name)
+        {
+            int col = name[0] - 'a';
+            int row = name[1] - '1';
+            return 8 * row + (7 - col);
+        }
     }
 }
