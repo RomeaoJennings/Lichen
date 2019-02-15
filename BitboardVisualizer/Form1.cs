@@ -20,7 +20,7 @@ namespace BitboardVisualizer
             InitializeComponent();
         }
 
-        
+
         private void txtDecimal_Changed(object sender, EventArgs e)
         {
             if (txtDecimal.Text == "")
@@ -35,7 +35,7 @@ namespace BitboardVisualizer
                 grid.Bitboard = bb;
                 txtHex.Text = $"{bb:X}";
             }
-            
+
 
         }
 
@@ -64,7 +64,7 @@ namespace BitboardVisualizer
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager reorigins = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
             this.txtDecimal = new System.Windows.Forms.TextBox();
             this.txtHex = new System.Windows.Forms.TextBox();
@@ -142,7 +142,7 @@ namespace BitboardVisualizer
             this.Controls.Add(this.groupBox1);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Icon = ((System.Drawing.Icon)(reorigins.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
@@ -154,6 +154,6 @@ namespace BitboardVisualizer
 
         }
 
-        
+
     }
 }

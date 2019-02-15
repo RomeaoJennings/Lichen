@@ -203,13 +203,13 @@ namespace Typhoon.Model
             List<Move> moves = new List<Move>();
         }
 
-        public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int sourceSquare)
+        public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int originSquare)
         {
             while (attacks != 0)
             {
                 int destinationSquare = attacks.BitScanForward();
                 Bitboards.PopLsb(ref attacks);
-                list.Add(new Move(sourceSquare, destinationSquare, squares[destinationSquare]));
+                list.Add(new Move(originSquare, destinationSquare, squares[destinationSquare]));
             }
         }
 
@@ -250,12 +250,146 @@ namespace Typhoon.Model
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
-        public void GetPawnMoves(List<Move> list, int color, Bitboard destinationBitboard)
+        public void GetAllPawnCaptureMoves(List<Move> list, int color, Bitboard destinationBitboard)
         {
-            // TODO: EnPassent
-            // TODO: Promotion
+            Bitboard opponentPieces;
+            Bitboard leftAttacks;
+            Bitboard rightAttacks;
+            Bitboard leftPromotionAttacks;
+            Bitboard rightPromotionAttacks;
+            Bitboard promotionMask;
+            int leftOffset;
+            int rightOffset;
+            Bitboard pawns = pieces[color, PAWN];
+            if (color == WHITE)
+            {
+                opponentPieces = pieces[BLACK, ALL_PIECES];
+                leftAttacks = (pawns & ~Bitboards.ColumnBitboards[A1]) << 9;
+                rightAttacks = (pawns & ~Bitboards.ColumnBitboards[H1]) << 7;
+                leftOffset = -9;
+                rightOffset = -7;
+                promotionMask = Bitboards.RowBitboards[A8];
+            }
+            else
+            {
+                opponentPieces = pieces[WHITE, ALL_PIECES];
+                leftAttacks = (pawns & ~Bitboards.ColumnBitboards[A1]) >> 7;
+                rightAttacks = (pawns & ~Bitboards.ColumnBitboards[H1]) >> 9;
+                leftOffset = 7;
+                rightOffset = 9;
+                promotionMask = Bitboards.RowBitboards[A1];
+            }
+
+            leftAttacks &= destinationBitboard;
+            rightAttacks &= destinationBitboard;
+
+            // Handle enPassent with single branch -- we usually dont get inside.
+            if (enPassentBitboard != 0)
+            {
+                int enPassentSquare = enPassentBitboard.BitScanForward();
+                if ((leftAttacks & enPassentBitboard) != 0)
+                {
+                    list.Add(new Move(enPassentSquare + leftOffset, enPassentSquare, true, false));
+                }
+                if ((rightAttacks & enPassentBitboard) != 0)
+                {
+                    list.Add(new Move(enPassentSquare + rightOffset, enPassentSquare, true, false));
+                }
+            }
+            leftAttacks &= opponentPieces;
+            rightAttacks &= opponentPieces;
 
 
+            // Separate promotion moves for separate processing
+            leftPromotionAttacks = leftAttacks & promotionMask;
+            rightPromotionAttacks = rightAttacks & promotionMask;
+
+            // Flip bits of promotion mask to mask off promotion pawns in regular attacks bitboards.
+            promotionMask = ~promotionMask;
+            leftAttacks &= promotionMask;
+            rightAttacks &= promotionMask;
+
+            GeneratePawnMovesFromBitboard(list, leftAttacks, leftOffset);
+            GeneratePawnMovesFromBitboard(list, rightAttacks, rightOffset);
+            GeneratePromotions(list, leftPromotionAttacks, leftOffset);
+            GeneratePromotions(list, rightPromotionAttacks, rightOffset);
+        }
+
+        public void GetAllPawnPushMoves(List<Move> list, int color, Bitboard destinationBitboard)
+        {
+            Bitboard emptySquares = ~AllPiecesBitboard;
+            Bitboard pawnSingleMoves = pieces[color, PAWN];
+
+            Bitboard pawnDoubleMoves;
+            int pawnSingleMoveOffset;
+            int pawnDoubleMoveOffset;
+            Bitboard promotionMask;
+
+            if (color == WHITE)
+            {
+                pawnSingleMoves <<= 8;
+                pawnSingleMoves &= emptySquares;
+                pawnDoubleMoves = (pawnSingleMoves & Bitboards.RowBitboards[A3]) << 8;
+                pawnSingleMoveOffset = -8;
+                pawnDoubleMoveOffset = -16;
+                promotionMask = 0xFF00000000000000UL;
+            }
+            else
+            {
+                pawnSingleMoves >>= 8;
+                pawnSingleMoves &= emptySquares;
+                pawnDoubleMoves = (pawnSingleMoves & Bitboards.RowBitboards[A6]) >> 8;
+                pawnSingleMoveOffset = 8;
+                pawnDoubleMoveOffset = 16;
+                promotionMask = 0xFFUL;
+            }
+
+            pawnSingleMoves &= destinationBitboard;
+            pawnDoubleMoves &= emptySquares & destinationBitboard;
+
+            // Handle Double Moves
+            GeneratePawnMovesFromBitboard(list, pawnDoubleMoves, pawnDoubleMoveOffset);
+
+            // Handle Non-Promotion Single Moves
+            Bitboard nonPromotionPawns = ~promotionMask & pawnSingleMoves;
+            GeneratePawnMovesFromBitboard(list, nonPromotionPawns, pawnSingleMoveOffset);
+
+            // Handle Promotions
+            Bitboard promotionPawns = promotionMask & pawnSingleMoves;
+            GeneratePromotions(list, promotionPawns, pawnSingleMoveOffset);
+        }
+
+        public void GeneratePromotions(List<Move> list, Bitboard destinationBitboard, int originOffset)
+        {
+            while (destinationBitboard != 0)
+            {
+                int destinationSquare = destinationBitboard.BitScanForward();
+                Bitboards.PopLsb(ref destinationBitboard);
+                GeneratePromotions(list, destinationSquare + originOffset, destinationSquare);
+            }
+        }
+
+        public void GeneratePromotions(List<Move> list, int originSquare, int destinationSquare)
+        {
+            int capturedPiece = squares[destinationSquare];
+            list.Add(new Move(originSquare, destinationSquare, capturedPiece, QUEEN));
+            list.Add(new Move(originSquare, destinationSquare, capturedPiece, ROOK));
+            list.Add(new Move(originSquare, destinationSquare, capturedPiece, BISHOP));
+            list.Add(new Move(originSquare, destinationSquare, capturedPiece, KNIGHT));
+        }
+
+        public void GeneratePawnMovesFromBitboard(
+            List<Move> list,
+            Bitboard destinationsBitboard,
+            int originOffset)
+        {
+            while (destinationsBitboard != 0)
+            {
+                int destinationSquare = destinationsBitboard.BitScanForward();
+                Bitboards.PopLsb(ref destinationsBitboard);
+
+                list.Add(new Move(destinationSquare + originOffset, destinationSquare, squares[destinationSquare]));
+            }
         }
 
         #region Equality and HashCode Functions

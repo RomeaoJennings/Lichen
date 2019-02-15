@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,26 +9,54 @@ namespace Typhoon.Model
 {
     public struct Move : IComparable
     {
-        public readonly int SourceSquare;
+        public readonly int OriginSquare;
         public readonly int DestinationSquare;
         public readonly int CapturePiece;
         public readonly int PromotionType;
+        public readonly bool IsEnPassent;
+        public readonly bool IsCastle;
 
-        public Move(int source, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
+        public Move(int origin, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
         {
-            SourceSquare = source;
+            OriginSquare = origin;
             DestinationSquare = destination;
             CapturePiece = capture;
             PromotionType = promotionType;
+            IsEnPassent = false;
+            IsCastle = false;
+        }
+
+        public Move(int origin, int destination, bool enPassent, bool castle)
+        {
+            //Must be castle or enPassent
+            Debug.Assert(enPassent != castle);
+
+            OriginSquare = origin;
+            DestinationSquare = destination;
+            PromotionType = Board.EMPTY;
+            if (enPassent)
+            {
+                CapturePiece = Board.PAWN;
+                IsEnPassent = true;
+                IsCastle = false;
+            }
+            else
+            {
+                CapturePiece = Board.EMPTY;
+                IsEnPassent = false;
+                IsCastle = true;
+            }
         }
 
         public static bool operator ==(Move m1, Move m2)
         {
             return
                 m1.DestinationSquare == m2.DestinationSquare &&
-                m1.SourceSquare == m2.SourceSquare &&
+                m1.OriginSquare == m2.OriginSquare &&
                 m1.CapturePiece == m2.CapturePiece &&
-                m1.PromotionType == m2.PromotionType;
+                m1.PromotionType == m2.PromotionType &&
+                m1.IsEnPassent == m2.IsEnPassent &&
+                m1.IsCastle == m2.IsCastle;
         }
 
         public static bool operator !=(Move m1, Move m2)
@@ -44,23 +73,27 @@ namespace Typhoon.Model
 
         public override int GetHashCode()
         {
-            return
-                SourceSquare << 8 ^
+            int hash =
+                OriginSquare << 8 ^
                 DestinationSquare << 16 ^
                 CapturePiece << 4 ^
                 PromotionType;
+            if (IsCastle)
+                hash ^= 0x63826364;
+            if (IsEnPassent)
+                hash ^= 0x12345654;
+            return hash;
         }
-
 
         public int CompareTo(object obj)
         {
             try
             {
                 Move that = (Move)obj;
-                int source = SourceSquare - that.SourceSquare;
-                if (source != 0)
+                int origin = OriginSquare - that.OriginSquare;
+                if (origin != 0)
                 {
-                    return source;
+                    return origin;
                 }
                 int dest = DestinationSquare - that.DestinationSquare;
                 if (dest != 0)
@@ -80,11 +113,15 @@ namespace Typhoon.Model
             string pieceStr = "KQRBNP";
 
             StringBuilder sb = new StringBuilder();
-            sb.Append(Bitboards.GetNameFromSquare(SourceSquare));
+            sb.Append(Bitboards.GetNameFromSquare(OriginSquare));
             if (CapturePiece != Board.EMPTY)
             {
                 sb.Append('x');
                 sb.Append(pieceStr[CapturePiece]);
+            }
+            else if (IsEnPassent)
+            {
+                sb.Append("xP(EP)");
             }
             else
             {
