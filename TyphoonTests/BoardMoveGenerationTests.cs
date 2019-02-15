@@ -51,7 +51,7 @@ namespace TyphoonTests
             board.GetAllStepPieceMoves(actualMoves, Board.KNIGHT, Board.WHITE, destinationBitboard);
             TestUtils.TestArrayEquality(expectedMoves, actualMoves.ToArray());
 
-            //TODO: Add additional tests
+            // TODO: Add additional tests
         }
 
         [TestMethod]
@@ -216,19 +216,19 @@ namespace TyphoonTests
             string fen = "5r2/1P3P2/8/4k1K1/8/8/4p2p/7R w - - 0 1";
             Move[] expectedWhiteMoves =
             {
-                new Move(Board.B7, Board.B8,Board.EMPTY, Board.QUEEN),
-                new Move(Board.B7, Board.B8,Board.EMPTY, Board.ROOK),
-                new Move(Board.B7, Board.B8,Board.EMPTY, Board.BISHOP),
-                new Move(Board.B7, Board.B8,Board.EMPTY, Board.KNIGHT)
+                new Move(Board.B7, Board.B8, Board.EMPTY, Board.QUEEN),
+                new Move(Board.B7, Board.B8, Board.EMPTY, Board.ROOK),
+                new Move(Board.B7, Board.B8, Board.EMPTY, Board.BISHOP),
+                new Move(Board.B7, Board.B8, Board.EMPTY, Board.KNIGHT)
             };
             TestUtils.TestPawnMoves(false, fen, expectedWhiteMoves, Board.WHITE);
 
             Move[] expectedBlackMoves =
             {
-                new Move(Board.E2, Board.E1,Board.EMPTY, Board.QUEEN),
-                new Move(Board.E2, Board.E1,Board.EMPTY, Board.ROOK),
-                new Move(Board.E2, Board.E1,Board.EMPTY, Board.BISHOP),
-                new Move(Board.E2, Board.E1,Board.EMPTY, Board.KNIGHT)
+                new Move(Board.E2, Board.E1, Board.EMPTY, Board.QUEEN),
+                new Move(Board.E2, Board.E1, Board.EMPTY, Board.ROOK),
+                new Move(Board.E2, Board.E1, Board.EMPTY, Board.BISHOP),
+                new Move(Board.E2, Board.E1, Board.EMPTY, Board.KNIGHT)
             };
             TestUtils.TestPawnMoves(false, fen, expectedBlackMoves, Board.BLACK);
         }
@@ -240,7 +240,7 @@ namespace TyphoonTests
             string fen = "2bqkbnr/r1p1pp2/p1n3pp/1p1p1P1P/P3P3/2N5/1PPP2P1/R1BQKBNR w KQk - 1 8";
             Move[] expectedMoves =
             {
-                new Move(Board.A4, Board.B5,Board.PAWN),
+                new Move(Board.A4, Board.B5, Board.PAWN),
                 new Move(Board.E4, Board.D5, Board.PAWN),
                 new Move(Board.F5, Board.G6, Board.PAWN),
                 new Move(Board.H5, Board.G6, Board.PAWN)

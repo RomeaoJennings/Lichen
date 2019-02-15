@@ -28,7 +28,7 @@ namespace Typhoon.Model
 
         public Move(int origin, int destination, bool enPassent, bool castle)
         {
-            //Must be castle or enPassent
+            // Must be castle or enPassent
             Debug.Assert(enPassent != castle);
 
             OriginSquare = origin;

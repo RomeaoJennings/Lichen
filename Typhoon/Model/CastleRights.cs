@@ -32,7 +32,7 @@ namespace Typhoon.Model
             return new CastleRights(whiteKing, whiteQueen, blackKing, blackQueen);
         }
 
-        public static bool operator==(CastleRights c1, CastleRights c2)
+        public static bool operator ==(CastleRights c1, CastleRights c2)
         {
             return c1.WhiteKing == c2.WhiteKing &&
                 c1.WhiteQueen == c2.WhiteQueen &&
@@ -54,7 +54,7 @@ namespace Typhoon.Model
 
         public override int GetHashCode()
         {
-            return 
+            return
                 (Convert.ToInt32(WhiteKing) + 1 << 28) |
                 (Convert.ToInt32(WhiteQueen) + 1 << 20) |
                 (Convert.ToInt32(BlackKing) + 1 << 12) |

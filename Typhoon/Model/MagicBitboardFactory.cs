@@ -165,7 +165,7 @@ namespace Typhoon.Model
         public static Bitboard[] GenerateMagicNumbers(Bitboard[] occupancyBitboards, int[] offsets)
         {
             Bitboard[] result = new Bitboard[64];
-            for (int i=0;i<64;i++)
+            for (int i = 0; i < 64; i++)
             {
                 Bitboard[] permutations = GeneratePermutations(occupancyBitboards[i]);
                 Bitboard[] moves = GenerateMovesFromPermutations(i, permutations, offsets);
@@ -177,12 +177,12 @@ namespace Typhoon.Model
         public static void WriteMagicsToFile(string filename, Bitboard[] magics)
         {
             StringBuilder sb = new StringBuilder();
-            for (int i=0;i<64;i++)
+            for (int i = 0; i < 64; i++)
             {
                 string magicStr = $"{magics[i]:X}";
                 magicStr = magicStr.PadLeft(16, '0');
                 sb.Append($"0x{magicStr}UL, ");
-                if (i % 8 == 3 || i%8==7)
+                if (i % 8 == 3 || i % 8 == 7)
                     sb.Append("\r\n");
             }
             File.WriteAllText(filename, sb.ToString());

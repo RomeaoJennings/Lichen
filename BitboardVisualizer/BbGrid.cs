@@ -43,7 +43,7 @@ namespace BitboardVisualizer
             Font font = new Font("Arial", textSize);
             float top = 0;
             float left = 0;
-            for (int i =63; i >= 0; i--)
+            for (int i = 63; i >= 0; i--)
             {
                 bool bitSet = 0 != ((1UL << i) & _bitboard);
                 Brush brush = bitSet ? Brushes.Gray : Brushes.White;

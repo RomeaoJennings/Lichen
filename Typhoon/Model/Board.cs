@@ -198,11 +198,6 @@ namespace Typhoon.Model
             return result;
         }
 
-        public void GetMoves()
-        {
-            List<Move> moves = new List<Move>();
-        }
-
         public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int originSquare)
         {
             while (attacks != 0)
@@ -462,10 +457,10 @@ namespace Typhoon.Model
             try
             {
                 string[] elements = fen.Split(' ');
-                string squares = elements[0].Replace("/", string.Empty);
+                string sq = elements[0].Replace("/", string.Empty);
                 int square = 63;
                 // Process squares
-                foreach (char curr in squares)
+                foreach (char curr in sq)
                 {
                     // Blank Squares
                     if (curr >= '0' && curr <= '9')
