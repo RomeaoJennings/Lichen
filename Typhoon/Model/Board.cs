@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
@@ -101,7 +98,7 @@ namespace Typhoon.Model
         #endregion
 
 
-        private Bitboard[,] pieces;
+        private Bitboard[][] pieces;
         private int[] squares;
         private int playerToMove;
         private CastleRights castleRights;
@@ -113,7 +110,7 @@ namespace Typhoon.Model
 
         public Bitboard AllPiecesBitboard
         {
-            get { return pieces[WHITE, ALL_PIECES] | pieces[BLACK, ALL_PIECES]; }
+            get { return pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES]; }
         }
 
         public int HalfMoveClock
@@ -144,22 +141,25 @@ namespace Typhoon.Model
             halfMoveClock = 0;
             enPassentBitboard = 0;
 
-            pieces = new Bitboard[2, 7];
-            pieces[WHITE, PAWN] = 0xFF00UL;
-            pieces[WHITE, KNIGHT] = 0x42UL;
-            pieces[WHITE, BISHOP] = 0x24UL;
-            pieces[WHITE, ROOK] = 0x81UL;
-            pieces[WHITE, QUEEN] = 0x10UL;
-            pieces[WHITE, KING] = 0x8UL;
-            pieces[WHITE, ALL_PIECES] = 0xFFFF;
+            pieces = new Bitboard[2][];
+            pieces[WHITE] = new Bitboard[7];
+            pieces[BLACK] = new Bitboard[7];
 
-            pieces[BLACK, PAWN] = 0xFF000000000000UL;
-            pieces[BLACK, KNIGHT] = 0x4200000000000000UL;
-            pieces[BLACK, BISHOP] = 0x2400000000000000UL;
-            pieces[BLACK, ROOK] = 0x8100000000000000UL;
-            pieces[BLACK, QUEEN] = 0x1000000000000000UL;
-            pieces[BLACK, KING] = 0x800000000000000UL;
-            pieces[BLACK, ALL_PIECES] = 0xFFFF000000000000;
+            pieces[WHITE][PAWN] = 0xFF00UL;
+            pieces[WHITE][KNIGHT] = 0x42UL;
+            pieces[WHITE][BISHOP] = 0x24UL;
+            pieces[WHITE][ROOK] = 0x81UL;
+            pieces[WHITE][QUEEN] = 0x10UL;
+            pieces[WHITE][KING] = 0x8UL;
+            pieces[WHITE][ALL_PIECES] = 0xFFFF;
+
+            pieces[BLACK][PAWN] = 0xFF000000000000UL;
+            pieces[BLACK][KNIGHT] = 0x4200000000000000UL;
+            pieces[BLACK][BISHOP] = 0x2400000000000000UL;
+            pieces[BLACK][ROOK] = 0x8100000000000000UL;
+            pieces[BLACK][QUEEN] = 0x1000000000000000UL;
+            pieces[BLACK][KING] = 0x800000000000000UL;
+            pieces[BLACK][ALL_PIECES] = 0xFFFF000000000000;
 
             InitPieceSquares();
         }
@@ -176,7 +176,7 @@ namespace Typhoon.Model
             {
                 for (int piece = 0; piece < 6; piece++)
                 {
-                    Bitboard curr = pieces[side, piece];
+                    Bitboard curr = pieces[side][piece];
                     while (curr != 0)
                     {
                         squares[curr.BitScanForward()] = piece;
@@ -188,7 +188,7 @@ namespace Typhoon.Model
 
         public Bitboard GetPieceBitboard(int color, int pieceType)
         {
-            return pieces[color, pieceType];
+            return pieces[color][pieceType];
         }
 
         public int[] GetPieceSquares()
@@ -215,7 +215,7 @@ namespace Typhoon.Model
 
             Bitboard[] attackBitboards = pieceType == KING ? Bitboards.KingBitboards : Bitboards.KnightBitboards;
 
-            Bitboard piece = pieces[color, pieceType];
+            Bitboard piece = pieces[color][pieceType];
             while (piece != 0)
             {
                 int square = piece.BitScanForward();
@@ -255,10 +255,10 @@ namespace Typhoon.Model
             Bitboard promotionMask;
             int leftOffset;
             int rightOffset;
-            Bitboard pawns = pieces[color, PAWN];
+            Bitboard pawns = pieces[color][PAWN];
             if (color == WHITE)
             {
-                opponentPieces = pieces[BLACK, ALL_PIECES];
+                opponentPieces = pieces[BLACK][ALL_PIECES];
                 leftAttacks = (pawns & ~Bitboards.ColumnBitboards[A1]) << 9;
                 rightAttacks = (pawns & ~Bitboards.ColumnBitboards[H1]) << 7;
                 leftOffset = -9;
@@ -267,7 +267,7 @@ namespace Typhoon.Model
             }
             else
             {
-                opponentPieces = pieces[WHITE, ALL_PIECES];
+                opponentPieces = pieces[WHITE][ALL_PIECES];
                 leftAttacks = (pawns & ~Bitboards.ColumnBitboards[A1]) >> 7;
                 rightAttacks = (pawns & ~Bitboards.ColumnBitboards[H1]) >> 9;
                 leftOffset = 7;
@@ -313,7 +313,7 @@ namespace Typhoon.Model
         public void GetAllPawnPushMoves(List<Move> list, int color, Bitboard destinationBitboard)
         {
             Bitboard emptySquares = ~AllPiecesBitboard;
-            Bitboard pawnSingleMoves = pieces[color, PAWN];
+            Bitboard pawnSingleMoves = pieces[color][PAWN];
 
             Bitboard pawnDoubleMoves;
             int pawnSingleMoveOffset;
@@ -392,27 +392,43 @@ namespace Typhoon.Model
         public static bool operator ==(Board b1, Board b2)
         {
             if (b1.playerToMove != b2.playerToMove)
+            {
                 return false;
+            }
 
             // Compare piece bitboards
             for (int i = 0; i < ALL_PIECES; i++)
             {
-                if (b1.pieces[WHITE, i] != b2.pieces[WHITE, i])
+                if (b1.pieces[WHITE][i] != b2.pieces[WHITE][i])
+                {
                     return false;
-                if (b1.pieces[BLACK, i] != b2.pieces[BLACK, i])
+                }
+
+                if (b1.pieces[BLACK][i] != b2.pieces[BLACK][i])
+                {
                     return false;
+                }
             }
 
             if (b1.castleRights != b2.castleRights)
+            {
                 return false;
+            }
 
             if (b1.halfMoveClock != b2.halfMoveClock)
+            {
                 return false;
+            }
 
             if (b1.fullMoveNumber != b2.fullMoveNumber)
+            {
                 return false;
+            }
+
             if (b1.enPassentBitboard != b2.enPassentBitboard)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -436,8 +452,8 @@ namespace Typhoon.Model
             int hashCode = playerToMove.GetHashCode();
             for (int i = 0; i < ALL_PIECES; i++)
             {
-                hashCode ^= pieces[WHITE, i].GetHashCode();
-                hashCode ^= pieces[BLACK, i].GetHashCode();
+                hashCode ^= pieces[WHITE][i].GetHashCode();
+                hashCode ^= pieces[BLACK][i].GetHashCode();
             }
             hashCode ^= castleRights.GetHashCode();
             hashCode ^= fullMoveNumber;
@@ -450,8 +466,14 @@ namespace Typhoon.Model
 
         public static Board FromFEN(string fen)
         {
-            Board result = new Board();
-            result.pieces = new Bitboard[2, 7];
+            Board result = new Board
+            {
+                pieces = new Bitboard[2][]
+            };
+            result.pieces[WHITE] = new Bitboard[7];
+            result.pieces[BLACK] = new Bitboard[7];
+
+
             const string whitePieces = "KQRBNP";
             const string blackPieces = "kqrbnp";
             try
@@ -472,15 +494,15 @@ namespace Typhoon.Model
                     else if (curr >= 'b' && curr <= 'r')
                     {
                         Bitboard toAdd = Bitboards.SquareBitboards[square];
-                        result.pieces[BLACK, blackPieces.IndexOf(curr)] |= toAdd;
-                        result.pieces[BLACK, ALL_PIECES] |= toAdd;
+                        result.pieces[BLACK][blackPieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[BLACK][ALL_PIECES] |= toAdd;
                     }
                     // White Pieces
                     else
                     {
                         Bitboard toAdd = Bitboards.SquareBitboards[square];
-                        result.pieces[WHITE, whitePieces.IndexOf(curr)] |= toAdd;
-                        result.pieces[WHITE, ALL_PIECES] |= toAdd;
+                        result.pieces[WHITE][whitePieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[WHITE][ALL_PIECES] |= toAdd;
                     }
                     square--;
                 }
