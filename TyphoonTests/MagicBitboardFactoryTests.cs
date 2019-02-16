@@ -6,7 +6,6 @@ namespace TyphoonTests
 {
     using Bitboard = UInt64;
 
-
     public class MagicBitboardFactoryTests
     {
         [TestClass]

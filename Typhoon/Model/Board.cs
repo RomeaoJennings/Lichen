@@ -437,6 +437,25 @@ namespace Typhoon.Model
             }
         }
 
+        // Returns all pieces of the passed color that attack the relevent square.
+        public Bitboard AttackersTo(int square, int color)
+        {
+            int opponent = color == WHITE ? BLACK : WHITE;
+            Bitboard occupancyBitboard = AllPiecesBitboard;
+
+            Bitboard queenBishop = pieces[color][QUEEN];
+            Bitboard queenRook = queenBishop;
+            queenBishop |= pieces[color][BISHOP];
+            queenRook |= pieces[color][ROOK];
+
+            Bitboard result = (Bitboards.KingBitboards[square] & pieces[color][KING]);
+            result |= (Bitboards.GetRookMoveBitboard(square, occupancyBitboard) & queenRook);
+            result |= (Bitboards.GetBishopMoveBitboard(square, occupancyBitboard) & queenBishop);
+            result |= Bitboards.KnightBitboards[square] & pieces[color][KNIGHT];
+            result |= (Bitboards.PawnBitboards[opponent, square] & pieces[color][PAWN]);
+            return result;
+        }
+
         #region Equality and HashCode Functions
 
         public static bool operator ==(Board b1, Board b2)

@@ -11,6 +11,23 @@ namespace TyphoonTests
     public class BoardTests
     {
         [TestClass]
+        public class AttackersTo
+        {
+            [TestMethod]
+            public void ComputesCorrectly()
+            {
+                Board board = Board.FromFEN("rnbqkbnr/2p1pppp/1p2B3/1R1p3Q/2PKPN2/2N5/P2P1PPP/2B4R b k - 12 16");
+                Assert.AreEqual(0x8413C200000UL, board.AttackersTo(Board.D5, Board.WHITE));
+
+                board = Board.FromFEN("rnbqkbnr/2pp2pp/R3pp2/1P1P4/5N2/6PB/1PP1PP1P/1NBQK2R b Kk - 2 9");
+                Assert.AreEqual(0x801004010000UL, board.AttackersTo(Board.E6, Board.WHITE));
+
+                board = Board.FromFEN("2b1kbnr/2ppq1pp/r3Pp2/1P6/3n1N2/6PB/1PP1PP1P/1NBQK2R w Kk - 5 13");
+                Assert.AreEqual(0x18800010000000UL, board.AttackersTo(Board.E6, Board.BLACK));
+            }
+        }
+
+        [TestClass]
         public class GenerateMovesFromBitboard
         {
             [TestMethod]
