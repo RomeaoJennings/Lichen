@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
@@ -14,21 +10,23 @@ namespace Typhoon.Model
         public const int WHITE = 0;
         public const int BLACK = 1;
 
+        //Diagonal Constants
+        public const int FORWARD = 0;
+        public const int BACKWARD = 1;
+
         public const int NUM_SQUARES = 64;
 
-        public static byte[,] SquareDistance = new byte[NUM_SQUARES, NUM_SQUARES];
+        public static readonly byte[,] SquareDistance = InitSquareDistances();
 
-        public static readonly Bitboard[] SquareBitboards = new Bitboard[NUM_SQUARES];
+        public static readonly Bitboard[] SquareBitboards = InitSquareBitboards();
 
-        public static readonly Bitboard[] RowBitboards = new Bitboard[NUM_SQUARES];
-        public static readonly Bitboard[] ColumnBitboards = new Bitboard[NUM_SQUARES];
-        public static readonly Bitboard[] FrontDiagonalBitboards = new Bitboard[NUM_SQUARES];
-        public static readonly Bitboard[] BackDiagonalBitboards = new Bitboard[NUM_SQUARES];
+        public static readonly Bitboard[] RowBitboards = InitRowBitboards();
+        public static readonly Bitboard[] ColumnBitboards = InitColumnBitboards();
+        public static readonly Bitboard[,] DiagonalBitboards = InitDiagonalBitboards();
 
-        public static readonly Bitboard[] KingBitboards = new Bitboard[NUM_SQUARES];
-        public static readonly Bitboard[] KnightBitboards = new Bitboard[NUM_SQUARES];
-        public static readonly Bitboard[,] PawnMoveBitboards = new Bitboard[2, NUM_SQUARES];
-        public static readonly Bitboard[,] PawnAttkBitboards = new Bitboard[2, NUM_SQUARES];
+        public static readonly Bitboard[] KingBitboards = InitKingBitboards();
+        public static readonly Bitboard[] KnightBitboards = InitKnightBitboards();
+        public static readonly Bitboard[,] PawnBitboards = InitPawnBitboards();
 
         private const Bitboard DeBruijnSequence = 0x37E84A99DAE458F;
         private static readonly int[] MultiplyDeBruijnBitPosition =
@@ -75,8 +73,16 @@ namespace Typhoon.Model
             52, 53, 53, 53, 53, 53, 53, 52
         };
 
-        public static readonly Bitboard[] RookPremasks;
-        public static readonly Bitboard[][] RookMoves;
+        public static readonly Bitboard[] RookPremasks =
+            MagicBitboardFactory.GenerateRookOccupancyBitboards();
+
+        public static readonly Bitboard[][] RookMoves =
+            MagicBitboardFactory.InitMagics(
+                RookPremasks,
+                RookMagics,
+                RookShifts,
+                MagicBitboardFactory.RookOffsets
+            );
 
         public static readonly Bitboard[] BishopMagics =
         {
@@ -110,8 +116,16 @@ namespace Typhoon.Model
             58, 59, 59, 59, 59, 59, 59, 58
         };
 
-        public static readonly Bitboard[] BishopPremasks;
-        public static readonly Bitboard[][] BishopMoves;
+        public static readonly Bitboard[] BishopPremasks =
+            MagicBitboardFactory.GenerateBishopOccupancyBitboards();
+
+        public static readonly Bitboard[][] BishopMoves =
+            MagicBitboardFactory.InitMagics(
+                BishopPremasks,
+                BishopMagics,
+                BishopShifts,
+                MagicBitboardFactory.BishopOffsets
+            );
 
         public static Bitboard GetRookMoveBitboard(int square, Bitboard occupancyBitboard)
         {
@@ -127,38 +141,9 @@ namespace Typhoon.Model
             return BishopMoves[square][index];
         }
 
-        static Bitboards()
+        private static byte[,] InitSquareDistances()
         {
-            InitSquareDistances();
-            InitSquareBitboards();
-            InitRowBitboards();
-            InitColumnBitboards();
-            InitDiagonalBitboards();
-
-            InitKingBitboards();
-            InitKnightBitboards();
-            InitPawnBitboards();
-
-            BishopPremasks = MagicBitboardFactory.GenerateBishopOccupancyBitboards();
-            BishopMoves = MagicBitboardFactory.InitMagics(
-                BishopPremasks,
-                BishopMagics,
-                BishopShifts,
-                MagicBitboardFactory.BishopOffsets
-            );
-
-            RookPremasks = MagicBitboardFactory.GenerateRookOccupancyBitboards();
-            RookMoves = MagicBitboardFactory.InitMagics(
-                RookPremasks,
-                RookMagics,
-                RookShifts,
-                MagicBitboardFactory.RookOffsets
-            );
-
-        }
-
-        private static void InitSquareDistances()
-        {
+            byte[,] result = new byte[NUM_SQUARES, NUM_SQUARES];
             for (int sq1 = 0; sq1 < NUM_SQUARES; sq1++)
             {
                 for (int sq2 = 0; sq2 <= sq1; sq2++)
@@ -166,22 +151,26 @@ namespace Typhoon.Model
                     int rowDist = Math.Abs(GetRow(sq1) - GetRow(sq2));
                     int colDist = Math.Abs(GetColumn(sq1) - GetColumn(sq2));
                     byte dist = (byte)Math.Max(colDist, rowDist);
-                    SquareDistance[sq1, sq2] = dist;
-                    SquareDistance[sq2, sq1] = dist;
+                    result[sq1, sq2] = dist;
+                    result[sq2, sq1] = dist;
                 }
             }
+            return result;
         }
 
-        private static void InitSquareBitboards()
+        private static Bitboard[] InitSquareBitboards()
         {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
             for (int square = 0; square < NUM_SQUARES; square++)
             {
-                SquareBitboards[square] = 1UL << square;
+                result[square] = 1UL << square;
             }
+            return result;
         }
 
-        private static void InitRowBitboards()
+        private static Bitboard[] InitRowBitboards()
         {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
             var rows = new Bitboard[] { 0xFF00000000000000,
                                         0x00FF000000000000,
                                         0x0000FF0000000000,
@@ -193,12 +182,14 @@ namespace Typhoon.Model
 
             for (int square = 0; square < NUM_SQUARES; square++)
             {
-                RowBitboards[square] = rows[GetRow(square)];
+                result[square] = rows[GetRow(square)];
             }
+            return result;
         }
 
-        private static void InitColumnBitboards()
+        private static Bitboard[] InitColumnBitboards()
         {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
             var cols = new Bitboard[] { 0x8080808080808080,
                                         0x4040404040404040,
                                         0x2020202020202020,
@@ -210,17 +201,20 @@ namespace Typhoon.Model
 
             for (int square = 0; square < NUM_SQUARES; square++)
             {
-                ColumnBitboards[square] = cols[GetColumn(square)];
+                result[square] = cols[GetColumn(square)];
             }
+            return result;
         }
 
-        private static void InitDiagonalBitboards()
+        private static Bitboard[,] InitDiagonalBitboards()
         {
+            Bitboard[,] result = new Bitboard[2, NUM_SQUARES];
             for (int i = 0; i < NUM_SQUARES; i++)
             {
-                FrontDiagonalBitboards[i] = GenerateDiagonalBitboard(i, 7);
-                BackDiagonalBitboards[i] = GenerateDiagonalBitboard(i, 9);
+                result[FORWARD, i] = GenerateDiagonalBitboard(i, 7);
+                result[BACKWARD, i] = GenerateDiagonalBitboard(i, 9);
             }
+            return result;
         }
 
         private static Bitboard GenerateDiagonalBitboard(int square, int offset)
@@ -243,45 +237,41 @@ namespace Typhoon.Model
             return result;
         }
 
-        private static void InitKingBitboards()
+        private static Bitboard[] InitKingBitboards()
         {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
             int[] offsets = { -9, -8, -7, -1, 1, 7, 8, 9 };
             for (int square = 0; square < NUM_SQUARES; square++)
             {
-                KingBitboards[square] = GenerateBitboardFromOffsets(square, 1, offsets);
+                result[square] = GenerateBitboardFromOffsets(square, 1, offsets);
             }
+            return result;
         }
 
-        private static void InitPawnBitboards()
+        private static Bitboard[] InitKnightBitboards()
         {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
+            int[] offsets = { 17, 15, 10, 6, -6, -10, -15, -17 };
+            for (int square = 0; square < NUM_SQUARES; square++)
+            {
+                result[square] = GenerateBitboardFromOffsets(square, 5, offsets);
+            }
+            return result;
+        }
+
+        private static Bitboard[,] InitPawnBitboards()
+        {
+            Bitboard[,] result = new Bitboard[2, NUM_SQUARES];
             int[][] offsets = new int[2][];
             offsets[WHITE] = new int[] { 7, 9 };
             offsets[BLACK] = new int[] { -7, -9 };
 
             for (int i = 8; i < 56; i++)
             {
-                PawnAttkBitboards[WHITE, i] = GenerateBitboardFromOffsets(i, 1, offsets[WHITE]);
-                PawnAttkBitboards[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
-                PawnMoveBitboards[WHITE, i] = SquareBitboards[i + 8];
-                PawnMoveBitboards[BLACK, i] = SquareBitboards[i - 8];
-                if (i < 16)
-                {
-                    PawnMoveBitboards[WHITE, i] |= SquareBitboards[i + 16];
-                }
-                if (i >= 48)
-                {
-                    PawnMoveBitboards[BLACK, i] |= SquareBitboards[i - 16];
-                }
+                result[WHITE, i] = GenerateBitboardFromOffsets(i, 1, offsets[WHITE]);
+                result[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
             }
-        }
-
-        private static void InitKnightBitboards()
-        {
-            int[] offsets = { 17, 15, 10, 6, -6, -10, -15, -17 };
-            for (int square = 0; square < NUM_SQUARES; square++)
-            {
-                KnightBitboards[square] = GenerateBitboardFromOffsets(square, 5, offsets);
-            }
+            return result;
         }
 
         public static Bitboard GenerateBitboardFromOffsets(int square, int maxDistance, int[] offsets)

@@ -198,7 +198,26 @@ namespace Typhoon.Model
             return result;
         }
 
-        public void GenerateMovesFromBitboard(List<Move> list, Bitboard attacks, int originSquare)
+        public List<Move> GetMoves()
+        {
+            List<Move> result = new List<Move>(32);
+            Bitboard destinationBitboard = ~pieces[playerToMove][ALL_PIECES];
+            GetAllStepPieceMoves(result, KING, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(result, QUEEN, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(result, ROOK, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(result, BISHOP, playerToMove, destinationBitboard);
+            GetAllStepPieceMoves(result, KNIGHT, playerToMove, destinationBitboard);
+            GetAllPawnCaptureMoves(result, playerToMove, destinationBitboard);
+            GetAllPawnPushMoves(result, playerToMove, destinationBitboard);
+
+            // TODO: Castle Moves
+            return result;
+        }
+
+        public void GenerateMovesFromBitboard(
+            List<Move> list,
+            Bitboard attacks,
+            int originSquare)
         {
             while (attacks != 0)
             {
@@ -208,7 +227,11 @@ namespace Typhoon.Model
             }
         }
 
-        public void GetAllStepPieceMoves(List<Move> list, int pieceType, int color, Bitboard destinationBitboard)
+        public void GetAllStepPieceMoves(
+            List<Move> list,
+            int pieceType,
+            int color,
+            Bitboard destinationBitboard)
         {
             Debug.Assert(pieceType == KING || pieceType == KNIGHT);
             Debug.Assert(color == WHITE || color == BLACK);
@@ -225,13 +248,29 @@ namespace Typhoon.Model
             }
         }
 
+        public void GetAllSlidingPieceMoves(
+            List<Move> list,
+            int pieceType,
+            int color, Bitboard destinationBitboard)
+        {
+            Debug.Assert(pieceType >= QUEEN && pieceType <= BISHOP);
+
+            Bitboard pieceBitboard = pieces[color][pieceType];
+            while (pieceBitboard != 0)
+            {
+                int square = pieceBitboard.BitScanForward();
+                Bitboards.PopLsb(ref pieceBitboard);
+                GetSlidingPieceMoves(list, pieceType, square, destinationBitboard);
+            }
+        }
+
         public void GetSlidingPieceMoves(
             List<Move> list,
             int pieceType,
             int square,
-            Bitboard allPieces,
             Bitboard destinationBitboard)
         {
+            Bitboard allPieces = AllPiecesBitboard;
             Bitboard attacks = 0;
             if (pieceType == ROOK || pieceType == QUEEN)
             {
@@ -245,7 +284,10 @@ namespace Typhoon.Model
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
-        public void GetAllPawnCaptureMoves(List<Move> list, int color, Bitboard destinationBitboard)
+        public void GetAllPawnCaptureMoves(
+            List<Move> list,
+            int color,
+            Bitboard destinationBitboard)
         {
             Bitboard opponentPieces;
             Bitboard leftAttacks;
@@ -294,7 +336,6 @@ namespace Typhoon.Model
             leftAttacks &= opponentPieces;
             rightAttacks &= opponentPieces;
 
-
             // Separate promotion moves for separate processing
             leftPromotionAttacks = leftAttacks & promotionMask;
             rightPromotionAttacks = rightAttacks & promotionMask;
@@ -310,7 +351,10 @@ namespace Typhoon.Model
             GeneratePromotions(list, rightPromotionAttacks, rightOffset);
         }
 
-        public void GetAllPawnPushMoves(List<Move> list, int color, Bitboard destinationBitboard)
+        public void GetAllPawnPushMoves(
+            List<Move> list,
+            int color,
+            Bitboard destinationBitboard)
         {
             Bitboard emptySquares = ~AllPiecesBitboard;
             Bitboard pawnSingleMoves = pieces[color][PAWN];
@@ -354,7 +398,10 @@ namespace Typhoon.Model
             GeneratePromotions(list, promotionPawns, pawnSingleMoveOffset);
         }
 
-        public void GeneratePromotions(List<Move> list, Bitboard destinationBitboard, int originOffset)
+        public void GeneratePromotions(
+            List<Move> list,
+            Bitboard destinationBitboard,
+            int originOffset)
         {
             while (destinationBitboard != 0)
             {
@@ -364,7 +411,10 @@ namespace Typhoon.Model
             }
         }
 
-        public void GeneratePromotions(List<Move> list, int originSquare, int destinationSquare)
+        public void GeneratePromotions(
+            List<Move> list,
+            int originSquare,
+            int destinationSquare)
         {
             int capturedPiece = squares[destinationSquare];
             list.Add(new Move(originSquare, destinationSquare, capturedPiece, QUEEN));

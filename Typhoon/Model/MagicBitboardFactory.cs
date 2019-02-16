@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
@@ -39,7 +35,10 @@ namespace Typhoon.Model
             Bitboard notBorder = 0x7E7E7E7E7E7E00UL;
             for (int i = 0; i < Bitboards.NUM_SQUARES; i++)
             {
-                result[i] = (Bitboards.FrontDiagonalBitboards[i] ^ Bitboards.BackDiagonalBitboards[i]) & notBorder;
+                result[i] =
+                    (Bitboards.DiagonalBitboards[Bitboards.FORWARD, i] ^
+                    Bitboards.DiagonalBitboards[Bitboards.BACKWARD, i]) &
+                    notBorder;
             }
             return result;
         }
@@ -58,7 +57,9 @@ namespace Typhoon.Model
                 {
                     bool bitIsSet = (i & (1 << bit)) != 0;
                     if (bitIsSet)
+                    {
                         result[i] |= Bitboards.SquareBitboards[offsets[bit]];
+                    }
                 }
             }
 
@@ -183,7 +184,9 @@ namespace Typhoon.Model
                 magicStr = magicStr.PadLeft(16, '0');
                 sb.Append($"0x{magicStr}UL, ");
                 if (i % 8 == 3 || i % 8 == 7)
+                {
                     sb.Append("\r\n");
+                }
             }
             File.WriteAllText(filename, sb.ToString());
         }
