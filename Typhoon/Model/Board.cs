@@ -198,6 +198,45 @@ namespace Typhoon.Model
             return result;
         }
 
+        public void DoMove(Move move)
+        {
+            int opponent = Opponent;
+
+            if (move.IsCastle) { }
+            else if (move.IsEnPassent) { }
+            else
+            {
+                int movedPiece = squares[move.OriginSquare];
+                Bitboard originSquareBitboard = Bitboards.SquareBitboards[move.OriginSquare];
+                Bitboard destinationSquareBitboard = Bitboards.SquareBitboards[move.DestinationSquare];
+
+                // Update Origin Square
+                squares[move.OriginSquare] = EMPTY;
+                pieces[playerToMove][movedPiece] ^= originSquareBitboard;
+                pieces[playerToMove][ALL_PIECES] ^= originSquareBitboard;
+
+                // Update Destination Square
+                squares[move.DestinationSquare] = movedPiece;
+                pieces[playerToMove][movedPiece] ^= destinationSquareBitboard;
+                pieces[playerToMove][ALL_PIECES] ^= destinationSquareBitboard;
+
+                // Update opponent's bitboards if piece was captured
+                if (move.CapturePiece != EMPTY)
+                {
+                    pieces[opponent][move.CapturePiece] ^= destinationSquareBitboard;
+                    pieces[opponent][ALL_PIECES] ^= destinationSquareBitboard;
+                }
+
+                // Swap promotion piece for pawn when promotion occurs
+                if (move.PromotionType != EMPTY)
+                {
+                    pieces[playerToMove][PAWN] ^= destinationSquareBitboard;
+                    pieces[playerToMove][move.PromotionType] ^= destinationSquareBitboard;
+                }
+            }
+            playerToMove = opponent;
+        }
+
         public List<Move> GetMoves()
         {
             List<Move> result = new List<Move>(32);
