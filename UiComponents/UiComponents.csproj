@@ -43,17 +43,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BbGrid.cs">
+    <Compile Include="BitboardGrid.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="BbGrid.Designer.cs">
-      <DependentUpon>BbGrid.cs</DependentUpon>
+    <Compile Include="BitboardGrid.Designer.cs">
+      <DependentUpon>BitboardGrid.cs</DependentUpon>
     </Compile>
     <Compile Include="ChessBoardView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ChessBoardView.Designer.cs">
       <DependentUpon>ChessBoardView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChessFont.cs" />
+    <Compile Include="PromotionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PromotionDialog.Designer.cs">
+      <DependentUpon>PromotionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -64,11 +71,14 @@
     <Compile Include="SquareClickedEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BbGrid.resx">
-      <DependentUpon>BbGrid.cs</DependentUpon>
+    <EmbeddedResource Include="BitboardGrid.resx">
+      <DependentUpon>BitboardGrid.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ChessBoardView.resx">
       <DependentUpon>ChessBoardView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PromotionDialog.resx">
+      <DependentUpon>PromotionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

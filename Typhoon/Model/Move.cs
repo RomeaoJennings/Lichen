@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
@@ -15,6 +12,7 @@ namespace Typhoon.Model
         public readonly int PromotionType;
         public readonly bool IsEnPassent;
         public readonly bool IsCastle;
+        public readonly int CastleDirection;
 
         public Move(int origin, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
         {
@@ -24,9 +22,10 @@ namespace Typhoon.Model
             PromotionType = promotionType;
             IsEnPassent = false;
             IsCastle = false;
+            CastleDirection = 0;
         }
 
-        public Move(int origin, int destination, bool enPassent, bool castle)
+        public Move(int origin, int destination, bool enPassent, bool castle, int castleDirection = 0)
         {
             // Must be castle or enPassent
             Debug.Assert(enPassent != castle);
@@ -34,6 +33,7 @@ namespace Typhoon.Model
             OriginSquare = origin;
             DestinationSquare = destination;
             PromotionType = Board.EMPTY;
+            CastleDirection = castleDirection;
             if (enPassent)
             {
                 CapturePiece = Board.PAWN;
@@ -45,6 +45,7 @@ namespace Typhoon.Model
                 CapturePiece = Board.EMPTY;
                 IsEnPassent = false;
                 IsCastle = true;
+
             }
         }
 
@@ -67,7 +68,10 @@ namespace Typhoon.Model
         public override bool Equals(object obj)
         {
             if (obj.GetType() == typeof(Move))
+            {
                 return (Move)obj == this;
+            }
+
             return false;
         }
 
@@ -79,9 +83,15 @@ namespace Typhoon.Model
                 CapturePiece << 4 ^
                 PromotionType;
             if (IsCastle)
+            {
                 hash ^= 0x63826364;
+            }
+
             if (IsEnPassent)
+            {
                 hash ^= 0x12345654;
+            }
+
             return hash;
         }
 

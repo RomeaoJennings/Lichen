@@ -198,11 +198,64 @@ namespace Typhoon.Model
             return result;
         }
 
+        public void GetCastleMoves(List<Move> list)
+        {
+            if (playerToMove == WHITE)
+            {
+                if (castleRights.WhiteKing &&
+                    (AllPiecesBitboard & 0x6UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(F1, BLACK) == 0 &&
+                    AttackersTo(G1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, G1, false, true, KING));
+                }
+                if (castleRights.WhiteQueen &&
+                    (AllPiecesBitboard & 0x70UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(D1, BLACK) == 0 &&
+                    AttackersTo(C1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, C1, false, true, QUEEN));
+                }
+            }
+            else
+            {
+                if (castleRights.BlackKing &&
+                    (AllPiecesBitboard & 0x600000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(F8, WHITE) == 0 &&
+                    AttackersTo(G8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, G8, false, true, KING));
+                }
+                if (castleRights.BlackQueen &&
+                    (AllPiecesBitboard & 0x7000000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(D8, WHITE) == 0 &&
+                    AttackersTo(C8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, C8, false, true, QUEEN));
+                }
+            }
+        }
+
         public void DoMove(Move move)
         {
             int opponent = Opponent;
 
-            if (move.IsCastle) { }
+            if (move.IsCastle)
+            {
+                CastleInfo castleInfo = Bitboards.CastleInfo[playerToMove][move.CastleDirection];
+                pieces[playerToMove][KING] ^= castleInfo.KingBitboard;
+                pieces[playerToMove][ROOK] ^= castleInfo.RookBitboard;
+                pieces[playerToMove][ALL_PIECES] ^= castleInfo.KingBitboard ^ castleInfo.RookBitboard;
+
+                squares[castleInfo.KingOrigin] = EMPTY;
+                squares[castleInfo.RookOrigin] = EMPTY;
+                squares[castleInfo.KingDestination] = KING;
+                squares[castleInfo.RookDestination] = ROOK;
+            }
             else if (move.IsEnPassent) { }
             else
             {
@@ -232,6 +285,7 @@ namespace Typhoon.Model
                 {
                     pieces[playerToMove][PAWN] ^= destinationSquareBitboard;
                     pieces[playerToMove][move.PromotionType] ^= destinationSquareBitboard;
+                    squares[move.DestinationSquare] = move.PromotionType;
                 }
             }
             playerToMove = opponent;
@@ -248,8 +302,8 @@ namespace Typhoon.Model
             GetAllStepPieceMoves(result, KNIGHT, playerToMove, destinationBitboard);
             GetAllPawnCaptureMoves(result, playerToMove, destinationBitboard);
             GetAllPawnPushMoves(result, playerToMove, destinationBitboard);
+            GetCastleMoves(result);
 
-            // TODO: Castle Moves
             return result;
         }
 

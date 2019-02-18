@@ -51,7 +51,17 @@ namespace UserInterface
                 if (mv.DestinationSquare == square)
                 {
                     view.ResetHighlights();
-                    model.DoMove(mv);
+                    if (mv.PromotionType != Board.EMPTY)
+                    {
+                        PromotionDialog pd = new PromotionDialog();
+                        pd.ShowDialog();
+                        model.DoMove(new Move(mv.OriginSquare, mv.DestinationSquare, mv.CapturePiece, pd.PromotionType));
+                    }
+                    else
+                    {
+                        model.DoMove(mv);
+                    }
+
                     SetAllSquares();
                     selectedSquare = -1;
                     return;

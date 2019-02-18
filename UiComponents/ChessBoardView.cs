@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Text;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using UiComponents.Properties;
 
 namespace UiComponents
 {
@@ -13,7 +10,6 @@ namespace UiComponents
 
         public event EventHandler<SquareClickedEventArgs> SquareClicked;
 
-        private static PrivateFontCollection pfc;
 
         private Color lightSquares = Color.White;
         private Color darkSquares = Color.LightSeaGreen;
@@ -76,20 +72,10 @@ namespace UiComponents
             }
         }
 
+
         public ChessBoardView()
         {
-            if (pfc == null) // Initalize only once
-            {
-                pfc = new PrivateFontCollection();
-                int length = Resources.MAGNFONT.Length;
-                IntPtr data = Marshal.AllocCoTaskMem(length);
-                Marshal.Copy(Resources.MAGNFONT, 0, data, length);
-                pfc.AddMemoryFont(data, length);
-                Marshal.FreeCoTaskMem(data);
-            }
-
             ResetSquares();
-
             InitializeComponent();
         }
 
@@ -162,7 +148,7 @@ namespace UiComponents
             float top = (Height - gridSize) / 2;
             float curr = left;
 
-            Font font = new Font(pfc.Families[0], squareSize * .6F);
+            Font font = new Font(ChessFonts.Magnetic, squareSize * .6F);
 
             Brush[] brushes = { new SolidBrush(lightSquares), new SolidBrush(darkSquares) };
             int brushIndex = 0;
@@ -176,10 +162,20 @@ namespace UiComponents
 
                 if (squares[i] != EMPTY)
                 {
-                    string piece = fontMapping[squares[i]].ToString();
+                    int square = squares[i];
+                    string pieceMask = fontMapping[square].ToString();
+                    if (square < 6)
+                    {
+                        pieceMask = fontMapping[square + 6].ToString();
+                    }
+                    string piece = fontMapping[square].ToString();
+
+
                     var size = g.MeasureString(piece, font);
                     float pieceLeft = (3 + squareSize - size.Width) / 2;
                     float pieceTop = (5 + squareSize - size.Height) / 2;
+
+                    g.DrawString(pieceMask, font, Brushes.White, curr + pieceLeft, top + pieceTop);
                     g.DrawString(piece, font, Brushes.Black, curr + pieceLeft, top + pieceTop);
                 }
                 if (highlightedSquares[i])

@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Typhoon.Model
 {
     public struct CastleRights
     {
-        readonly bool WhiteKing;
-        readonly bool WhiteQueen;
-        readonly bool BlackKing;
-        readonly bool BlackQueen;
+        public readonly bool WhiteKing;
+        public readonly bool WhiteQueen;
+        public readonly bool BlackKing;
+        public readonly bool BlackQueen;
 
         public static CastleRights All { get { return new CastleRights(true, true, true, true); } }
 
@@ -48,7 +44,10 @@ namespace Typhoon.Model
         public override bool Equals(object obj)
         {
             if (typeof(CastleRights) == obj.GetType())
+            {
                 return (CastleRights)obj == this;
+            }
+
             return false;
         }
 
