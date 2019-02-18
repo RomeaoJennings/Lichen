@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using UserInterface.Properties;
+using UiComponents.Properties;
 
-namespace UserInterface
+namespace UiComponents
 {
     public partial class ChessBoardView : UserControl
     {

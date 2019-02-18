@@ -1,4 +1,4 @@
-﻿namespace BitboardVisualizer
+﻿namespace UiComponents
 {
     public partial class BitboardGrid
     {

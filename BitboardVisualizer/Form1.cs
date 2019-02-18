@@ -63,7 +63,7 @@ namespace BitboardVisualizer
             this.txtHex = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.grid = new BitboardVisualizer.BitboardGrid();
+            this.grid = new UiComponents.BitboardGrid();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -120,7 +120,7 @@ namespace BitboardVisualizer
             // 
             // grid
             // 
-            this.grid.Bitboard = ((ulong)(0ul));
+            this.grid.Bitboard = 0ul;
             this.grid.Location = new System.Drawing.Point(12, 108);
             this.grid.Name = "grid";
             this.grid.Size = new System.Drawing.Size(328, 321);

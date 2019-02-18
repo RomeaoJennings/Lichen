@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Typhoon.Model;
+using UiComponents;
 
 namespace UserInterface
 {

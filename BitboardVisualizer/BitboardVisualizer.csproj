@@ -61,12 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BbGrid.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="BbGrid.Designer.cs">
-      <DependentUpon>BbGrid.cs</DependentUpon>
-    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -75,9 +69,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="BbGrid.resx">
-      <DependentUpon>BbGrid.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -118,6 +109,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UiComponents\UiComponents.csproj">
+      <Project>{50a69c1e-2f54-4382-9b66-18af2ea4f62f}</Project>
+      <Name>UiComponents</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

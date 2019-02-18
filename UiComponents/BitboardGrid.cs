@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BitboardVisualizer
+namespace UiComponents
 {
 
 
@@ -18,8 +12,8 @@ namespace BitboardVisualizer
         {
             InitializeComponent();
         }
-        private UInt64 _bitboard;
-        public UInt64 Bitboard
+        private ulong _bitboard;
+        public ulong Bitboard
         {
             get
             {
@@ -37,7 +31,7 @@ namespace BitboardVisualizer
             base.OnPaint(e);
 
             float gridSize = Math.Min(Width, Height);
-            
+
             float cellSize = gridSize / 8.1F;
             float textSize = cellSize * 0.3F;
             Font font = new Font("Arial", textSize);

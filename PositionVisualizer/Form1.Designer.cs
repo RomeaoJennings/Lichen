@@ -1,4 +1,6 @@
-﻿namespace UserInterface
+﻿using UiComponents;
+
+namespace UserInterface
 {
     partial class Form1
     {
@@ -28,7 +30,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.boardView = new UserInterface.ChessBoardView();
+            this.boardView = new UiComponents.ChessBoardView();
             this.SuspendLayout();
             // 
             // boardView

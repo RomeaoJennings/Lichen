@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UserInterface
+namespace UiComponents
 {
     public class SquareClickedEventArgs : EventArgs
     {

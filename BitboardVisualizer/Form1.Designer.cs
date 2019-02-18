@@ -1,9 +1,11 @@
-﻿namespace BitboardVisualizer
+﻿using UiComponents;
+
+namespace BitboardVisualizer
 {
     partial class Form1
     {
 
-       
+
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtDecimal;
         private System.Windows.Forms.TextBox txtHex;
