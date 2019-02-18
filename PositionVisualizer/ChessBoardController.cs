@@ -50,7 +50,8 @@ namespace UserInterface
                 if (mv.DestinationSquare == square)
                 {
                     view.ResetHighlights();
-                    // Perform Move here.
+                    model.DoMove(mv);
+                    SetAllSquares();
                     selectedSquare = -1;
                     return;
                 }
@@ -79,6 +80,7 @@ namespace UserInterface
 
         public void SetAllSquares()
         {
+            view.ResetSquares();
             for (int color = 0; color < 2; color++)
             {
                 for (int piece = 0; piece < 6; piece++)
