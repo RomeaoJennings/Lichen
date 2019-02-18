@@ -11,6 +11,8 @@ namespace Typhoon.Model
 
         private static readonly ulong whiteToMoveHash = random.NextUlong();
 
+        private static readonly ulong[] enPassentFile = InitEnPassentHashes();
+
         private static readonly ulong castleWhiteKingHash = random.NextUlong();
         private static readonly ulong castleWhiteQueenHash = random.NextUlong();
         private static readonly ulong castleBlackKingHash = random.NextUlong();
@@ -31,6 +33,16 @@ namespace Typhoon.Model
                         result[color][piece][square] = random.NextUlong();
                     }
                 }
+            }
+            return result;
+        }
+
+        private static ulong[] InitEnPassentHashes()
+        {
+            ulong[] result = new ulong[8];
+            for (int i = 0; i < 8; i++)
+            {
+                result[i] = random.NextUlong();
             }
             return result;
         }

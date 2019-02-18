@@ -28,8 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // ChessBoardView
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.DoubleBuffered = true;
+            this.Name = "ChessBoardView";
+            this.Size = new System.Drawing.Size(399, 402);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ChessBoardView_MouseClick);
+            this.ResumeLayout(false);
+
         }
 
         #endregion
