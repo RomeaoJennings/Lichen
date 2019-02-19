@@ -24,6 +24,9 @@ namespace Typhoon.Model
         public static readonly Bitboard[] ColumnBitboards = InitColumnBitboards();
         public static readonly Bitboard[,] DiagonalBitboards = InitDiagonalBitboards();
 
+        public static readonly Bitboard[,] LineBitboards = InitLineBitboards();
+        public static readonly Bitboard[,] BetweenBitboards = InitBetweenBitboards();
+
         public static readonly Bitboard[] KingBitboards = InitKingBitboards();
         public static readonly Bitboard[] KnightBitboards = InitKnightBitboards();
         public static readonly Bitboard[,] PawnBitboards = InitPawnBitboards();
@@ -236,6 +239,71 @@ namespace Typhoon.Model
                     next += offset;
                 }
                 offset *= -1; // Reverse the ray direction
+            }
+            return result;
+        }
+
+        private static Bitboard[,] InitLineBitboards()
+        {
+            Bitboard[,] result = new Bitboard[NUM_SQUARES, NUM_SQUARES];
+
+            for (int i = 0; i < NUM_SQUARES; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    Bitboard correctBitboard = 0;
+                    if (RowBitboards[i] == RowBitboards[j])
+                    {
+                        correctBitboard = RowBitboards[i];
+                    }
+                    else if (ColumnBitboards[i] == ColumnBitboards[j])
+                    {
+                        correctBitboard = ColumnBitboards[i];
+                    }
+                    else if (DiagonalBitboards[FORWARD, i] == DiagonalBitboards[FORWARD, j])
+                    {
+                        correctBitboard = DiagonalBitboards[FORWARD, i];
+                    }
+                    else if (DiagonalBitboards[BACKWARD, i] == DiagonalBitboards[BACKWARD, j])
+                    {
+                        correctBitboard = DiagonalBitboards[BACKWARD, i];
+                    }
+                    result[i, j] = correctBitboard;
+                    result[j, i] = correctBitboard;
+                }
+            }
+            return result;
+        }
+
+        private static Bitboard[,] InitBetweenBitboards()
+        {
+            Bitboard[,] result = new Bitboard[NUM_SQUARES, NUM_SQUARES];
+            for (int i = 0; i < NUM_SQUARES; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    int offset = 0;
+                    if (RowBitboards[i] == RowBitboards[j])
+                        offset = 1;
+                    else if (ColumnBitboards[i] == ColumnBitboards[j])
+                        offset = 8;
+                    else if (DiagonalBitboards[FORWARD, i] == DiagonalBitboards[FORWARD, j])
+                        offset = 7;
+                    else if (DiagonalBitboards[BACKWARD, i] == DiagonalBitboards[BACKWARD, j])
+                        offset = 9;
+                    Bitboard currBitboard = 0;
+                    if (offset != 0)
+                    {
+                        int currSquare = j + offset;
+                        while (currSquare != i)
+                        {
+                            currBitboard |= Bitboards.SquareBitboards[currSquare];
+                            currSquare += offset;
+                        }
+                    }
+                    result[i, j] = currBitboard;
+                    result[j, i] = currBitboard;
+                }
             }
             return result;
         }

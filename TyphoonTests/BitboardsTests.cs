@@ -79,6 +79,71 @@ namespace TyphoonTests
         }
 
         [TestClass]
+        public class LineBitboards
+        {
+            [TestMethod]
+            public void IsPopulatedCorrectly()
+            {
+                Assert.AreEqual(Bitboards.RowBitboards[Board.A1], Bitboards.LineBitboards[Board.A1, Board.C1]);
+                Assert.AreEqual(Bitboards.RowBitboards[Board.H5], Bitboards.LineBitboards[Board.C5, Board.A5]);
+
+                Assert.AreEqual(Bitboards.ColumnBitboards[Board.A1], Bitboards.LineBitboards[Board.A1, Board.A5]);
+                Assert.AreEqual(Bitboards.ColumnBitboards[Board.F8], Bitboards.LineBitboards[Board.F6, Board.F3]);
+
+                Assert.AreEqual(
+                    Bitboards.DiagonalBitboards[Bitboards.FORWARD, Board.A1],
+                    Bitboards.LineBitboards[Board.B2, Board.C3]);
+                Assert.AreEqual(
+                    Bitboards.DiagonalBitboards[Bitboards.BACKWARD, Board.F3],
+                    Bitboards.LineBitboards[Board.G2, Board.D5]);
+
+                Assert.AreEqual(0UL, Bitboards.LineBitboards[Board.A1, Board.C2]);
+            }
+
+            [TestMethod]
+            public void InversesEqualEachOther()
+            {
+                Random r = new Random();
+                for (int i = 0; i < 100; i++)
+                {
+                    int one = r.Next(64);
+                    int two = r.Next(64);
+                    Assert.AreEqual(Bitboards.LineBitboards[one, two], Bitboards.LineBitboards[two, one]);
+                }
+            }
+        }
+
+        [TestClass]
+        public class BetweenBitboards
+        {
+            [TestMethod]
+            public void CalculatesCorrectly() {
+                Assert.AreEqual(0UL, Bitboards.BetweenBitboards[Board.A1, Board.C4]);
+                Assert.AreEqual(0UL, Bitboards.BetweenBitboards[Board.H7, Board.H6]);
+
+                Assert.AreEqual(0x102000UL, Bitboards.BetweenBitboards[Board.B1, Board.E4]);
+                Assert.AreEqual(0x4020100800UL, Bitboards.BetweenBitboards[Board.A6, Board.F1]);
+                Assert.AreEqual(0x1EUL, Bitboards.BetweenBitboards[Board.C1, Board.H1]);
+                Assert.AreEqual(0x4040404040000UL, Bitboards.BetweenBitboards[Board.F8, Board.F2]);
+            }
+
+            [TestMethod]
+            public void InversesEqualEachOther()
+            {
+                Random r = new Random();
+                for (int i = 0; i < 100; i++)
+                {
+                    int one = r.Next(64);
+                    int two = r.Next(64);
+                    Assert.AreEqual(
+                        Bitboards.BetweenBitboards[one, two],
+                        Bitboards.BetweenBitboards[two, one]);
+                }
+                
+            }
+        }
+
+        [TestClass]
         public class KingBitboards
         {
             [TestMethod]
