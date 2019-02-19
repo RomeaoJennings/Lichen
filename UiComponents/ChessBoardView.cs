@@ -154,12 +154,7 @@ namespace UiComponents
             int brushIndex = 0;
             for (int i = 63; i >= 0; --i)
             {
-
-
                 g.FillRectangle(brushes[brushIndex], curr, top, squareSize, squareSize);
-
-
-
                 if (squares[i] != EMPTY)
                 {
                     int square = squares[i];

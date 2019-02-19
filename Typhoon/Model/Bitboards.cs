@@ -29,6 +29,7 @@ namespace Typhoon.Model
         public static readonly Bitboard[,] PawnBitboards = InitPawnBitboards();
 
         public static readonly CastleInfo[][] CastleInfo = InitCastleRookBitboards();
+        public static readonly int[] EnPassentOffset = { -8, 8 };
 
         private const Bitboard DeBruijnSequence = 0x37E84A99DAE458F;
         private static readonly int[] MultiplyDeBruijnBitPosition =

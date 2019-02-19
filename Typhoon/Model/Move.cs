@@ -36,7 +36,7 @@ namespace Typhoon.Model
             CastleDirection = castleDirection;
             if (enPassent)
             {
-                CapturePiece = Board.PAWN;
+                CapturePiece = Board.EMPTY;
                 IsEnPassent = true;
                 IsCastle = false;
             }

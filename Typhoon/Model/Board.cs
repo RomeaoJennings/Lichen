@@ -244,6 +244,12 @@ namespace Typhoon.Model
         {
             int opponent = Opponent;
 
+            // Reset En Passent Bitboard, If Currently Set
+            if (enPassentBitboard != 0)
+            {
+                enPassentBitboard = 0;
+            }
+
             if (move.IsCastle)
             {
                 CastleInfo castleInfo = Bitboards.CastleInfo[playerToMove][move.CastleDirection];
@@ -256,8 +262,7 @@ namespace Typhoon.Model
                 squares[castleInfo.KingDestination] = KING;
                 squares[castleInfo.RookDestination] = ROOK;
             }
-            else if (move.IsEnPassent) { }
-            else
+            else // Handle non-castle moves, including promotions and en passent
             {
                 int movedPiece = squares[move.OriginSquare];
                 Bitboard originSquareBitboard = Bitboards.SquareBitboards[move.OriginSquare];
@@ -273,7 +278,29 @@ namespace Typhoon.Model
                 pieces[playerToMove][movedPiece] ^= destinationSquareBitboard;
                 pieces[playerToMove][ALL_PIECES] ^= destinationSquareBitboard;
 
-                // Update opponent's bitboards if piece was captured
+                // Handle En Passent
+                if (squares[move.DestinationSquare] == PAWN)
+                {
+                    // Remove opponent's pawn when move is en passent
+                    if (move.IsEnPassent)
+                    {
+                        Bitboard enPassentTargetBitboard =
+                            Bitboards.SquareBitboards[move.DestinationSquare + Bitboards.EnPassentOffset[playerToMove]];
+                        pieces[opponent][PAWN] ^= enPassentTargetBitboard;
+                        pieces[opponent][ALL_PIECES] ^= enPassentTargetBitboard;
+                    }
+                    // Set En Passent Square if double pawn push
+                    else if (move.DestinationSquare - move.OriginSquare == 16) // White double push
+                    {
+                        enPassentBitboard = Bitboards.SquareBitboards[move.DestinationSquare - 8];
+                    }
+                    else if (move.DestinationSquare - move.OriginSquare == -16) // Black double push
+                    {
+                        enPassentBitboard = Bitboards.SquareBitboards[move.DestinationSquare + 8];
+                    }
+                }
+
+                // Update opponent's bitboards if piece was captured (note: EP moves do not list a capture piece)
                 if (move.CapturePiece != EMPTY)
                 {
                     pieces[opponent][move.CapturePiece] ^= destinationSquareBitboard;
@@ -288,7 +315,74 @@ namespace Typhoon.Model
                     squares[move.DestinationSquare] = move.PromotionType;
                 }
             }
+            UpdateCastleRights(move);
             playerToMove = opponent;
+        }
+
+        public void UpdateCastleRights(Move move)
+        {
+            if (playerToMove == WHITE)
+            {
+                if (move.OriginSquare == E1)
+                {
+                    if (castleRights.WhiteKing)
+                    { /* TODO: Zobrist */ }
+                    if (castleRights.WhiteQueen)
+                    { /* TODO: Zobrist */ }
+                    castleRights = new CastleRights(
+                        false,
+                        false,
+                        castleRights.BlackKing,
+                        castleRights.BlackQueen);
+                }
+                else if (castleRights.WhiteKing &&
+                    (move.OriginSquare == H1 || move.DestinationSquare == H1))
+                {
+                    castleRights = new CastleRights(
+                        false,
+                        castleRights.WhiteQueen,
+                        castleRights.BlackKing,
+                        castleRights.BlackQueen);
+                }
+                else if (castleRights.WhiteQueen &&
+                    (move.OriginSquare == A1 || move.DestinationSquare == A1))
+                {
+                    castleRights = new CastleRights(
+                        castleRights.WhiteKing,
+                        false,
+                        castleRights.BlackKing,
+                        castleRights.BlackQueen);
+                }
+            }
+            else
+            {
+                if (move.OriginSquare == E8)
+                {
+                    castleRights = new CastleRights(
+                        castleRights.WhiteKing,
+                        castleRights.WhiteQueen,
+                        false,
+                        false);
+                }
+                else if (castleRights.BlackKing &&
+                    (move.OriginSquare == H8 || move.DestinationSquare == H8))
+                {
+                    castleRights = new CastleRights(
+                        castleRights.WhiteKing,
+                        castleRights.WhiteQueen,
+                        false,
+                        castleRights.BlackQueen);
+                }
+                else if (castleRights.BlackQueen &&
+                    (move.OriginSquare == A8 || move.DestinationSquare == A8))
+                {
+                    castleRights = new CastleRights(
+                        castleRights.WhiteKing,
+                        castleRights.WhiteQueen,
+                        castleRights.BlackKing,
+                        false);
+                }
+            }
         }
 
         public List<Move> GetMoves()
