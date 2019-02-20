@@ -100,7 +100,7 @@ namespace UserInterface
         private List<Move> GetMovesByOrigin(int square)
         {
             Bitboard pinnedBitboard = model.GetPinnedPiecesBitboard();
-            return model.GetAllMoves().FindAll(m => m.OriginSquare == square && model.IsLegalMove(m,pinnedBitboard));
+            return model.GetAllMoves().FindAll(m => model.IsLegalMove(m,pinnedBitboard) && m.OriginSquare == square);
         }
 
         public void SetAllSquares()

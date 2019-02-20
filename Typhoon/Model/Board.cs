@@ -346,6 +346,7 @@ namespace Typhoon.Model
             else
             {
                 int movedPiece = squares[move.DestinationSquare];
+     
                 Bitboard destinationSquareBitboard = Bitboards.SquareBitboards[move.DestinationSquare];
                 Bitboard originSquareBitboard = Bitboards.SquareBitboards[move.OriginSquare];
 
@@ -378,76 +379,76 @@ namespace Typhoon.Model
                 // Swap promotion piece for pawn when promotion occurs
                 if (move.PromotionType != EMPTY)
                 {                    
-                    pieces[PlayerToMove][move.PromotionType] ^= destinationSquareBitboard;
+                    pieces[PlayerToMove][move.PromotionType] ^= originSquareBitboard;
+                    pieces[PlayerToMove][PAWN] ^= originSquareBitboard;
+                    squares[move.OriginSquare] = PAWN;
                 }
             }
         }
 
         public void UpdateCastleRights(Move move)
         {
-            if (PlayerToMove == WHITE)
+
+            if (move.OriginSquare == E1)
             {
-                if (move.OriginSquare == E1)
-                {
-                    if (CastleRights.WhiteKing)
-                    { /* TODO: Zobrist */ }
-                    if (CastleRights.WhiteQueen)
-                    { /* TODO: Zobrist */ }
-                    CastleRights = new CastleRights(
-                        false,
-                        false,
-                        CastleRights.BlackKing,
-                        CastleRights.BlackQueen);
-                }
-                else if (CastleRights.WhiteKing &&
-                    (move.OriginSquare == H1 || move.DestinationSquare == H1))
-                {
-                    CastleRights = new CastleRights(
-                        false,
-                        CastleRights.WhiteQueen,
-                        CastleRights.BlackKing,
-                        CastleRights.BlackQueen);
-                }
-                else if (CastleRights.WhiteQueen &&
-                    (move.OriginSquare == A1 || move.DestinationSquare == A1))
-                {
-                    CastleRights = new CastleRights(
-                        CastleRights.WhiteKing,
-                        false,
-                        CastleRights.BlackKing,
-                        CastleRights.BlackQueen);
-                }
+                if (CastleRights.WhiteKing)
+                { /* TODO: Zobrist */ }
+                if (CastleRights.WhiteQueen)
+                { /* TODO: Zobrist */ }
+                CastleRights = new CastleRights(
+                    false,
+                    false,
+                    CastleRights.BlackKing,
+                    CastleRights.BlackQueen);
             }
-            else
+            else if (CastleRights.WhiteKing &&
+                (move.OriginSquare == H1 || move.DestinationSquare == H1))
             {
-                if (move.OriginSquare == E8)
-                {
-                    CastleRights = new CastleRights(
-                        CastleRights.WhiteKing,
-                        CastleRights.WhiteQueen,
-                        false,
-                        false);
-                }
-                else if (CastleRights.BlackKing &&
-                    (move.OriginSquare == H8 || move.DestinationSquare == H8))
-                {
-                    CastleRights = new CastleRights(
-                        CastleRights.WhiteKing,
-                        CastleRights.WhiteQueen,
-                        false,
-                        CastleRights.BlackQueen);
-                }
-                else if (CastleRights.BlackQueen &&
-                    (move.OriginSquare == A8 || move.DestinationSquare == A8))
-                {
-                    CastleRights = new CastleRights(
-                        CastleRights.WhiteKing,
-                        CastleRights.WhiteQueen,
-                        CastleRights.BlackKing,
-                        false);
-                }
+                CastleRights = new CastleRights(
+                    false,
+                    CastleRights.WhiteQueen,
+                    CastleRights.BlackKing,
+                    CastleRights.BlackQueen);
+            }
+            else if (CastleRights.WhiteQueen &&
+                (move.OriginSquare == A1 || move.DestinationSquare == A1))
+            {
+                CastleRights = new CastleRights(
+                    CastleRights.WhiteKing,
+                    false,
+                    CastleRights.BlackKing,
+                    CastleRights.BlackQueen);
+            }
+
+
+            else if (move.OriginSquare == E8)
+            {
+                CastleRights = new CastleRights(
+                    CastleRights.WhiteKing,
+                    CastleRights.WhiteQueen,
+                    false,
+                    false);
+            }
+            else if (CastleRights.BlackKing &&
+                (move.OriginSquare == H8 || move.DestinationSquare == H8))
+            {
+                CastleRights = new CastleRights(
+                    CastleRights.WhiteKing,
+                    CastleRights.WhiteQueen,
+                    false,
+                    CastleRights.BlackQueen);
+            }
+            else if (CastleRights.BlackQueen &&
+                (move.OriginSquare == A8 || move.DestinationSquare == A8))
+            {
+                CastleRights = new CastleRights(
+                    CastleRights.WhiteKing,
+                    CastleRights.WhiteQueen,
+                    CastleRights.BlackKing,
+                    false);
             }
         }
+        
 
         public Bitboard GetPinnedPiecesBitboard()
         {
@@ -455,9 +456,11 @@ namespace Typhoon.Model
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
             Bitboard result = 0;
             Bitboard allPiecesBitboard = AllPiecesBitboard;
-            Bitboard sliders = pieces[opponent][QUEEN] 
-                | pieces[opponent][ROOK] 
-                | pieces[opponent][BISHOP];
+            Bitboard sliders = (pieces[opponent][QUEEN] | pieces[opponent][ROOK]) &
+                (Bitboards.RowBitboards[kingSquare] | Bitboards.ColumnBitboards[kingSquare]);
+            sliders |= (pieces[opponent][QUEEN] | pieces[opponent][BISHOP]) &
+                (Bitboards.DiagonalBitboards[Bitboards.FORWARD,kingSquare] | 
+                Bitboards.DiagonalBitboards[Bitboards.BACKWARD,kingSquare]);
             while (sliders != 0)
             {
                 int sliderSquare = sliders.BitScanForward();
@@ -487,6 +490,17 @@ namespace Typhoon.Model
             {
                 // If king move, it's legal if it is a castle move or if the destination is not attacked.
                 return move.IsCastle || AttackersTo(move.DestinationSquare, opponent) == 0;
+            }
+            else if (move.IsEnPassent)
+            {
+                Bitboard capSqBB = Bitboards.SquareBitboards[move.DestinationSquare + Bitboards.EnPassentOffset[PlayerToMove]];
+                Bitboard occupied = AllPiecesBitboard 
+                    ^ capSqBB ^ Bitboards.SquareBitboards[move.OriginSquare] 
+                    ^ Bitboards.SquareBitboards[move.DestinationSquare];
+                return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) & 
+                    (pieces[opponent][QUEEN] | pieces[opponent][ROOK])) == 0 &&
+                       (Bitboards.GetBishopMoveBitboard(kingSquare, occupied) & 
+                       (pieces[opponent][QUEEN] | pieces[opponent][BISHOP])) == 0;
             }
             else
             {
@@ -531,8 +545,8 @@ namespace Typhoon.Model
             GetAllSlidingPieceMoves(list, ROOK, PlayerToMove, destinationBitboard);
             GetAllSlidingPieceMoves(list, BISHOP, PlayerToMove, destinationBitboard);
             GetAllStepPieceMoves(list, KNIGHT, PlayerToMove, destinationBitboard);
-            GetAllPawnCaptureMoves(list, PlayerToMove, destinationBitboard);
             GetAllPawnPushMoves(list, PlayerToMove, destinationBitboard);  
+            GetAllPawnCaptureMoves(list, PlayerToMove, destinationBitboard);
         }
 
         public void GetEvasionMoves(List<Move> list, Bitboard checkersBitboard)
@@ -649,6 +663,14 @@ namespace Typhoon.Model
             int leftOffset;
             int rightOffset;
             Bitboard pawns = pieces[color][PAWN];
+
+            // Handle rare instance that enpassent capture removes check
+            if (EnPassentBitboard != 0 &&
+                Bitboards.SquareBitboards[EnPassentBitboard.BitScanForward() + Bitboards.EnPassentOffset[color]]
+                == destinationBitboard)
+            {
+                destinationBitboard |= EnPassentBitboard;
+            }
             if (color == WHITE)
             {
                 opponentPieces = pieces[BLACK][ALL_PIECES];

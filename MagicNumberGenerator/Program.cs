@@ -10,7 +10,11 @@ namespace MagicNumberGenerator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(GenerateReducedMagic(1, true));
+            GenerateMagics(
+                "rook", 
+                MagicBitboardFactory.GenerateRookOccupancyBitboards(), 
+                MagicBitboardFactory.RookOffsets, 
+                "rook.txt");
         }
 
         static Bitboard GenerateReducedMagic(int square, bool bishop)

@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PositionVisualizer", "Posit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UiComponents", "UiComponents\UiComponents.csproj", "{50A69C1E-2F54-4382-9B66-18AF2EA4F62F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perft", "Perft\Perft.csproj", "{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,14 @@ Global
 		{50A69C1E-2F54-4382-9B66-18AF2EA4F62F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{50A69C1E-2F54-4382-9B66-18AF2EA4F62F}.Release|x64.ActiveCfg = Release|Any CPU
 		{50A69C1E-2F54-4382-9B66-18AF2EA4F62F}.Release|x64.Build.0 = Release|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Debug|x64.Build.0 = Debug|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Release|x64.ActiveCfg = Release|Any CPU
+		{D6A1DFD9-98CA-409D-AC6D-B8F89D2F0693}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

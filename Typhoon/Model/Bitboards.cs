@@ -70,12 +70,12 @@ namespace Typhoon.Model
         public static readonly int[] RookShifts =
         {
             52, 53, 53, 53, 53, 53, 53, 52,
-            54, 54, 54, 54, 54, 54, 54, 53,
-            54, 54, 54, 54, 54, 54, 54, 53,
-            54, 54, 54, 54, 54, 54, 54, 53,
-            54, 54, 54, 54, 54, 54, 54, 53,
-            54, 54, 54, 54, 54, 54, 54, 53,
-            54, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
+            53, 54, 54, 54, 54, 54, 54, 53,
             52, 53, 53, 53, 53, 53, 53, 52
         };
 
@@ -232,7 +232,7 @@ namespace Typhoon.Model
             {
                 int curr = square;
                 int next = curr + offset;
-                while (next > 0 && next < 64 && SquareDistance[curr, next] == 1)
+                while (next >= 0 && next < 64 && SquareDistance[curr, next] == 1)
                 {
                     result |= SquareBitboards[next];
                     curr = next;
@@ -337,10 +337,17 @@ namespace Typhoon.Model
             offsets[WHITE] = new int[] { 7, 9 };
             offsets[BLACK] = new int[] { -7, -9 };
 
-            for (int i = 8; i < 56; i++)
+            for (int i = 0; i < 64; i++)
             {
-                result[WHITE, i] = GenerateBitboardFromOffsets(i, 1, offsets[WHITE]);
-                result[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
+                if (i < Board.H8)
+                {
+                    result[WHITE, i] = GenerateBitboardFromOffsets(i, 1, offsets[WHITE]);
+                }
+
+                if (i > Board.A1)
+                {
+                    result[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
+                }
             }
             return result;
         }
