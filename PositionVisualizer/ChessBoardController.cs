@@ -14,6 +14,7 @@ namespace UserInterface
         private readonly Board model;
 
         private int selectedSquare = -1;
+        private readonly Stack<BoardState> previousStates = new Stack<BoardState>();
 
         public ChessBoardController(ChessBoardView theView, Board theModel)
         {
@@ -21,6 +22,16 @@ namespace UserInterface
             view.SquareClicked += HandleClickedSquare;
             model = theModel;
             SetAllSquares();
+        }
+
+        public void UndoMove()
+        {
+            if (previousStates.Count > 0)
+            {
+                model.UndoMove(previousStates.Pop());
+                view.ResetHighlights();
+                SetAllSquares();
+            }
         }
 
         private void HandleClickedSquare(object sender, SquareClickedEventArgs e)
@@ -51,6 +62,8 @@ namespace UserInterface
                 if (mv.DestinationSquare == square)
                 {
                     view.ResetHighlights();
+                    BoardState bs = new BoardState(model.CastleRights, model.EnPassentBitboard, mv);
+                    previousStates.Push(bs);
                     if (mv.PromotionType != Board.EMPTY)
                     {
                         PromotionDialog pd = new PromotionDialog();
@@ -86,7 +99,8 @@ namespace UserInterface
         }
         private List<Move> GetMovesByOrigin(int square)
         {
-            return model.GetAllMoves().FindAll(m => m.OriginSquare == square);
+            Bitboard pinnedBitboard = model.GetPinnedPiecesBitboard();
+            return model.GetAllMoves().FindAll(m => m.OriginSquare == square && model.IsLegalMove(m,pinnedBitboard));
         }
 
         public void SetAllSquares()

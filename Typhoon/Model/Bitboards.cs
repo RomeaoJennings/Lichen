@@ -388,6 +388,11 @@ namespace Typhoon.Model
             return 7 - square / 8;
         }
 
+        public static bool AreAligned(int square1, int square2, int square3)
+        {
+            return (Bitboards.LineBitboards[square1, square2] & Bitboards.SquareBitboards[square3]) != 0;
+        }
+
         public static int CountBits(Bitboard bitboard)
         {
             int cnt = 0;

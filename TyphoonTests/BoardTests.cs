@@ -428,30 +428,5 @@ namespace TyphoonTests
                 Assert.AreEqual(0x14000000000000UL, board.GetPinnedPiecesBitboard());
             }
         }
-
-        [TestClass]
-        public class EqualityOperators
-        {
-            [TestMethod]
-            public void AreCorrect()
-            {
-                Board b1 = new Board();
-                Board b2 = new Board();
-                Board differentCastleRights = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1");
-                Board differentHalfMoveCounter = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 5 1");
-                Board differentFullMoveNum = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 2");
-                Board differentEnPassent = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq e5 0 1");
-
-
-                Assert.AreEqual(true, b1 == b2);
-                Assert.AreEqual(false, b1 != b2);
-                Assert.AreEqual(true, b1.Equals(b2));
-
-                Assert.AreNotEqual(true, b1 == differentCastleRights);
-                Assert.AreNotEqual(true, b1 == differentHalfMoveCounter);
-                Assert.AreNotEqual(true, b1 == differentFullMoveNum);
-                Assert.AreNotEqual(true, b1 == differentEnPassent);
-            }
-        }
     }
 }
