@@ -12,15 +12,14 @@ namespace Perft
     {
         static void Main(string[] args)
         {
-            Board board = Board.FromFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
-           
-                Perft(board, 6);
-           
+            Board board = new Board();
+            Perft(board, 7);
         }
 
         static void Perft(Board board, int depth)
         {
             Debug.Assert(depth >= 1);
+            var start = DateTime.Now;
             ulong pinned = board.GetPinnedPiecesBitboard();
             var moves = board.GetAllMoves().FindAll(m => board.IsLegalMove(m, pinned));
             ulong total = 0;
@@ -41,7 +40,10 @@ namespace Perft
                 total += nodes;
                 board.UndoMove(bs);
             }
+            var time = DateTime.Now - start;
             Console.WriteLine($"Total Nodes: {total}");
+            Console.WriteLine($"Elapsed Time: {time}");
+            Console.WriteLine($"Nodes Per Second: {total / time.TotalSeconds }");
         }
 
         static void CountNodes(Board board, int depth, ref ulong nodes)

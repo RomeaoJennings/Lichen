@@ -6,23 +6,78 @@ namespace Typhoon.Model
 {
     public struct Move : IComparable
     {
-        public readonly int OriginSquare;
-        public readonly int DestinationSquare;
-        public readonly int CapturePiece;
-        public readonly int PromotionType;
-        public readonly bool IsEnPassent;
-        public readonly bool IsCastle;
-        public readonly int CastleDirection;
+        public const int ORIGIN_MASK = 0x3F;
+        public const int DEST_MASK = 0xFC0;
+        public const int DEST_SHIFT = 6;
+        public const int CAPTURE_MASK = 0x7000;
+        public const int CAPTURE_SHIFT = 12;
+        public const int PROM_MASK = 0x38000;
+        public const int PROM_SHIFT = 15;
+        public const int EP_MASK = 0x40000;
+        public const int CASTLE_MASK = 0x80000;
+        public const int CASTLE_DIR_MASK = 0x100000;
+
+        private int move;
+
+        public int OriginSquare
+        {
+            get
+            {
+                return move & ORIGIN_MASK;
+            }
+        }
+        public int DestinationSquare
+        {
+            get
+            {
+                return (move & DEST_MASK) >> DEST_SHIFT;
+            }
+        }
+        public int CapturePiece
+        {
+            get
+            {
+                return (move & CAPTURE_MASK) >> CAPTURE_SHIFT;
+            }
+        }
+        public int PromotionType
+        {
+            get
+            {
+                return (move & PROM_MASK) >> PROM_SHIFT;
+            }
+        }
+        public bool IsEnPassent
+        {
+            get
+            {
+                return (move & EP_MASK) != 0;
+            }
+        }
+        public bool IsCastle
+        {
+            get
+            {
+                return (move & CASTLE_MASK) != 0;
+            }
+        }
+        public int CastleDirection
+        {
+            get
+            {
+                return move & CASTLE_DIR_MASK;
+            }
+        }
 
         public Move(int origin, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
         {
-            OriginSquare = origin;
-            DestinationSquare = destination;
-            CapturePiece = capture;
-            PromotionType = promotionType;
-            IsEnPassent = false;
-            IsCastle = false;
-            CastleDirection = 0;
+            move = promotionType << 3;
+            move |= capture;
+            move <<= 6;
+            move |= destination;
+            move <<= 6;
+            move |= origin;
+
         }
 
         public Move(int origin, int destination, bool enPassent, bool castle, int castleDirection = 0)
@@ -30,23 +85,19 @@ namespace Typhoon.Model
             // Must be castle or enPassent
             Debug.Assert(enPassent != castle);
 
-            OriginSquare = origin;
-            DestinationSquare = destination;
-            PromotionType = Board.EMPTY;
-            CastleDirection = castleDirection;
+            move = destination << 6;
+            move |= origin;
+            move |= 0x3F000; // capture and promotion are empty;
+
             if (enPassent)
-            {
-                CapturePiece = Board.EMPTY;
-                IsEnPassent = true;
-                IsCastle = false;
-            }
+                move |= EP_MASK;
             else
             {
-                CapturePiece = Board.EMPTY;
-                IsEnPassent = false;
-                IsCastle = true;
-
+                move |= CASTLE_MASK;
+                move |= (castleDirection << 20);
             }
+
+            
         }
 
         public static bool operator ==(Move m1, Move m2)
