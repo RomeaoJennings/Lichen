@@ -86,7 +86,7 @@ namespace UserInterface
         }
         private List<Move> GetMovesByOrigin(int square)
         {
-            return model.GetMoves().FindAll(m => m.OriginSquare == square);
+            return model.GetAllMoves().FindAll(m => m.OriginSquare == square);
         }
 
         public void SetAllSquares()

@@ -51,6 +51,7 @@
     <Compile Include="Model\CastleRights.cs" />
     <Compile Include="Model\MagicBitboardFactory.cs" />
     <Compile Include="Model\Move.cs" />
+    <Compile Include="Model\MoveType.cs" />
     <Compile Include="Model\ZobristHash.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

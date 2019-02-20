@@ -419,6 +419,17 @@ namespace TyphoonTests
         }
 
         [TestClass]
+        public class GetPinnedPiecesBitboard
+        {
+            [TestMethod]
+            public void CorretlyIdentifiesPinnedPieces()
+            {
+                Board board = Board.FromFEN("rnbqkbnr/2pppppp/1p6/pB5Q/4P3/8/PPPP1PPP/RNB1K1NR b KQkq - 1 3");
+                Assert.AreEqual(0x14000000000000UL, board.GetPinnedPiecesBitboard());
+            }
+        }
+
+        [TestClass]
         public class EqualityOperators
         {
             [TestMethod]

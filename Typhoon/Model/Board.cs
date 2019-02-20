@@ -240,6 +240,14 @@ namespace Typhoon.Model
             }
         }
 
+        public bool InCheck
+        {
+            get
+            {
+                return AttackersTo(pieces[KING][playerToMove].BitScanForward(), Opponent) != 0;
+            }
+        }
+
         public void DoMove(Move move)
         {
             int opponent = Opponent;
@@ -385,20 +393,98 @@ namespace Typhoon.Model
             }
         }
 
-        public List<Move> GetMoves()
+        public Bitboard GetPinnedPiecesBitboard()
+        {
+            int opponent = Opponent;
+            int kingSquare = pieces[playerToMove][KING].BitScanForward();
+            Bitboard result = 0;
+            Bitboard allPiecesBitboard = AllPiecesBitboard;
+            Bitboard sliders = pieces[opponent][QUEEN] 
+                | pieces[opponent][ROOK] 
+                | pieces[opponent][BISHOP];
+            while (sliders != 0)
+            {
+                int sliderSquare = sliders.BitScanForward();
+                Bitboards.PopLsb(ref sliders);
+                Bitboard betweenBitboard = Bitboards.BetweenBitboards[kingSquare, sliderSquare] & allPiecesBitboard;
+                
+                // If exactly one piece between slider and king, it is pinned.
+                if (betweenBitboard != 0)
+                {
+                    int betweenSquare = betweenBitboard.BitScanForward();
+                    Bitboards.PopLsb(ref betweenBitboard);
+                    if (betweenBitboard == 0)
+                    {
+                        result |= Bitboards.SquareBitboards[betweenSquare];
+                    }
+                }
+            }
+            return result;
+        }
+
+        public List<Move> GetAllMoves()
         {
             List<Move> result = new List<Move>(32);
-            Bitboard destinationBitboard = ~pieces[playerToMove][ALL_PIECES];
-            GetAllStepPieceMoves(result, KING, playerToMove, destinationBitboard);
-            GetAllSlidingPieceMoves(result, QUEEN, playerToMove, destinationBitboard);
-            GetAllSlidingPieceMoves(result, ROOK, playerToMove, destinationBitboard);
-            GetAllSlidingPieceMoves(result, BISHOP, playerToMove, destinationBitboard);
-            GetAllStepPieceMoves(result, KNIGHT, playerToMove, destinationBitboard);
-            GetAllPawnCaptureMoves(result, playerToMove, destinationBitboard);
-            GetAllPawnPushMoves(result, playerToMove, destinationBitboard);
-            GetCastleMoves(result);
-
+            int kingSquare = pieces[playerToMove][KING].BitScanForward();
+            Bitboard checkersBitboard = AttackersTo(kingSquare, Opponent);
+            if (checkersBitboard != 0)
+            {
+                GetEvasionMoves(result, checkersBitboard);
+            }
+            else
+            {
+                Bitboard destinationBitboard = ~pieces[playerToMove][ALL_PIECES];
+                GetMoves(MoveType.All, result, destinationBitboard);
+            }
             return result;
+        }
+
+        public void GetMoves(MoveType moveType, List<Move> list, Bitboard destinationBitboard)
+        {
+            // No need to get King moves for evasions, because they are 
+            // already generated before call to GetMoves
+            if (moveType != MoveType.Evasions)
+            {
+                GetAllStepPieceMoves(list, KING, playerToMove, destinationBitboard);
+                GetCastleMoves(list);
+            }
+
+            GetAllSlidingPieceMoves(list, QUEEN, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(list, ROOK, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(list, BISHOP, playerToMove, destinationBitboard);
+            GetAllStepPieceMoves(list, KNIGHT, playerToMove, destinationBitboard);
+            GetAllPawnCaptureMoves(list, playerToMove, destinationBitboard);
+            GetAllPawnPushMoves(list, playerToMove, destinationBitboard);  
+        }
+
+        public void GetEvasionMoves(List<Move> list, Bitboard checkersBitboard)
+        {
+            bool notDoubleCheck = (checkersBitboard & (checkersBitboard - 1)) == 0;
+            int kingSquare = pieces[playerToMove][KING].BitScanForward();
+            int opponent = Opponent;
+
+            // Get all squares attacked by sliders and remove them as possible escape squares
+            Bitboard sliders = checkersBitboard & ~(pieces[opponent][KNIGHT] | pieces[opponent][PAWN]);
+            Bitboard slideAttacksBitboard = 0;
+            while (sliders != 0)
+            {
+                int sliderSquare = sliders.BitScanForward();
+                Bitboards.PopLsb(ref sliders);
+                slideAttacksBitboard |= Bitboards.LineBitboards[kingSquare, sliderSquare];
+            }
+            Bitboard kingMovesBitboard = Bitboards.KingBitboards[kingSquare] 
+                & ((~pieces[playerToMove][ALL_PIECES] & ~slideAttacksBitboard) // Not own pieces or attacked
+                | checkersBitboard); // Include adjacent sliders
+            GenerateMovesFromBitboard(list, kingMovesBitboard, kingSquare);
+
+            //If double check then only king moves are possible.
+            if (notDoubleCheck)
+            {
+                int attackerSquare = checkersBitboard.BitScanForward();
+                Bitboard destinationBitboard = Bitboards.SquareBitboards[attackerSquare] 
+                    | Bitboards.BetweenBitboards[attackerSquare, kingSquare];
+                GetMoves(MoveType.Evasions, list, destinationBitboard);
+            }
         }
 
         public void GenerateMovesFromBitboard(
