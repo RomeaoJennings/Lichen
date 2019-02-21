@@ -132,6 +132,21 @@ namespace Typhoon.Model
             NewGame();
         }
 
+        public Board(Board copy)
+        {
+            this.pieces = new Bitboard[2][];
+            pieces[0] = new Bitboard[7];
+            pieces[1] = new Bitboard[7];
+            Array.Copy(copy.pieces[0], pieces[0], 7);
+            Array.Copy(copy.pieces[1], pieces[1], 7);
+            squares = copy.GetPieceSquares();
+            PlayerToMove = copy.PlayerToMove;
+            CastleRights = new CastleRights(copy.CastleRights);
+            HalfMoveClock = copy.HalfMoveClock;
+            FullMoveNumber = copy.FullMoveNumber;
+            EnPassentBitboard = copy.EnPassentBitboard;
+        }
+
         private void NewGame()
         {
             PlayerToMove = WHITE;
