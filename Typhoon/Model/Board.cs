@@ -243,8 +243,10 @@ namespace Typhoon.Model
         public void DoMove(Move move)
         {
             int opponent = Opponent;
-            int originSquare = move.OriginSquare;
-            int destinationSquare = move.DestinationSquare;
+            int originSquare = move.OriginSquare();
+            int destinationSquare = move.DestinationSquare();
+            int promotionType = move.PromotionType();
+            int capturePiece = move.CapturePiece();
 
             // Reset En Passent Bitboard, If Currently Set
             if (EnPassentBitboard != 0)
@@ -252,9 +254,9 @@ namespace Typhoon.Model
                 EnPassentBitboard = 0;
             }
 
-            if (move.IsCastle)
+            if (move.IsCastle())
             {
-                CastleInfo castleInfo = Bitboards.CastleInfo[PlayerToMove][move.CastleDirection];
+                CastleInfo castleInfo = Bitboards.CastleInfo[PlayerToMove][move.CastleDirection()];
                 pieces[PlayerToMove][KING] ^= castleInfo.KingBitboard;
                 pieces[PlayerToMove][ROOK] ^= castleInfo.RookBitboard;
                 pieces[PlayerToMove][ALL_PIECES] ^= castleInfo.KingBitboard ^ castleInfo.RookBitboard;
@@ -284,7 +286,7 @@ namespace Typhoon.Model
                 if (squares[destinationSquare] == PAWN)
                 {
                     // Remove opponent's pawn when move is en passent
-                    if (move.IsEnPassent)
+                    if (move.IsEnPassent())
                     {
                         int enPassentSquare = destinationSquare + Bitboards.EnPassentOffset[PlayerToMove];
                         Bitboard enPassentTargetBitboard =
@@ -304,18 +306,18 @@ namespace Typhoon.Model
                     }
 
                     // Swap promotion piece for pawn when promotion occurs
-                    if (move.PromotionType != EMPTY)
+                    if (promotionType != EMPTY)
                     {
                         pieces[PlayerToMove][PAWN] ^= destinationSquareBitboard;
-                        pieces[PlayerToMove][move.PromotionType] ^= destinationSquareBitboard;
-                        squares[destinationSquare] = move.PromotionType;
+                        pieces[PlayerToMove][promotionType] ^= destinationSquareBitboard;
+                        squares[destinationSquare] = promotionType;
                     }
                 }
 
                 // Update opponent's bitboards if piece was captured (note: EP moves do not list a capture piece)
-                if (move.CapturePiece != EMPTY)
+                if (capturePiece != EMPTY)
                 {
-                    pieces[opponent][move.CapturePiece] ^= destinationSquareBitboard;
+                    pieces[opponent][capturePiece] ^= destinationSquareBitboard;
                     pieces[opponent][ALL_PIECES] ^= destinationSquareBitboard;
                 }
 
@@ -328,18 +330,18 @@ namespace Typhoon.Model
         public void UndoMove(BoardState previousState)
         {
             Move move = previousState.Move;
-            int originSquare = move.OriginSquare;
-            int destinationSquare = move.DestinationSquare;
-            int capturePiece = move.CapturePiece;
-            int promotionType = move.PromotionType;
+            int originSquare = move.OriginSquare();
+            int destinationSquare = move.DestinationSquare();
+            int capturePiece = move.CapturePiece();
+            int promotionType = move.PromotionType();
             int opponent = PlayerToMove;
             PlayerToMove = Opponent;
             EnPassentBitboard = previousState.EnPassentBitboard;
             CastleRights = previousState.CastleRights;
 
-            if (move.IsCastle)
+            if (move.IsCastle())
             {
-                CastleInfo castleInfo = Bitboards.CastleInfo[PlayerToMove][move.CastleDirection];
+                CastleInfo castleInfo = Bitboards.CastleInfo[PlayerToMove][move.CastleDirection()];
                 pieces[PlayerToMove][KING] ^= castleInfo.KingBitboard;
                 pieces[PlayerToMove][ROOK] ^= castleInfo.RookBitboard;
                 pieces[PlayerToMove][ALL_PIECES] ^= castleInfo.KingBitboard ^ castleInfo.RookBitboard;
@@ -366,7 +368,7 @@ namespace Typhoon.Model
                 pieces[PlayerToMove][movedPiece] ^= originSquareBitboard;
                 pieces[PlayerToMove][ALL_PIECES] ^= originSquareBitboard;
 
-                if (move.IsEnPassent)
+                if (move.IsEnPassent())
                 {
                     int enPassentSquare = destinationSquare + Bitboards.EnPassentOffset[PlayerToMove];
                     Bitboard enPassentTargetBitboard =
@@ -490,15 +492,15 @@ namespace Typhoon.Model
         {
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
             int opponent = Opponent;
-            int originSquare = move.OriginSquare;
-            int destinationSquare = move.DestinationSquare;
+            int originSquare = move.OriginSquare();
+            int destinationSquare = move.DestinationSquare();
             
             if (originSquare == kingSquare)
             {
                 // If king move, it's legal if it is a castle move or if the destination is not attacked.
-                return move.IsCastle || AttackersTo(destinationSquare, opponent) == 0;
+                return move.IsCastle() || AttackersTo(destinationSquare, opponent) == 0;
             }
-            else if (move.IsEnPassent)
+            else if (move.IsEnPassent())
             {
                 Bitboard capSqBB = Bitboards.SquareBitboards[destinationSquare + Bitboards.EnPassentOffset[PlayerToMove]];
                 Bitboard occupied = AllPiecesBitboard 

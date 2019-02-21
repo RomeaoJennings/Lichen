@@ -59,16 +59,16 @@ namespace UserInterface
             // Check of clicked square completes a move
             foreach (var mv in GetMovesByOrigin(selectedSquare))
             {
-                if (mv.DestinationSquare == square)
+                if (mv.DestinationSquare() == square)
                 {
                     view.ResetHighlights();
                     BoardState bs = new BoardState(model.CastleRights, model.EnPassentBitboard, mv);
                     previousStates.Push(bs);
-                    if (mv.PromotionType != Board.EMPTY)
+                    if (mv.PromotionType() != Board.EMPTY)
                     {
                         PromotionDialog pd = new PromotionDialog();
                         pd.ShowDialog();
-                        model.DoMove(new Move(mv.OriginSquare, mv.DestinationSquare, mv.CapturePiece, pd.PromotionType));
+                        model.DoMove(new Move(mv.OriginSquare(), mv.DestinationSquare(), mv.CapturePiece(), pd.PromotionType));
                     }
                     else
                     {
@@ -94,13 +94,13 @@ namespace UserInterface
         {
             foreach (var m in moves)
             {
-                view.SetHighlight(m.DestinationSquare);
+                view.SetHighlight(m.DestinationSquare());
             }
         }
         private List<Move> GetMovesByOrigin(int square)
         {
             Bitboard pinnedBitboard = model.GetPinnedPiecesBitboard();
-            return model.GetAllMoves().FindAll(m => model.IsLegalMove(m,pinnedBitboard) && m.OriginSquare == square);
+            return model.GetAllMoves().FindAll(m => model.IsLegalMove(m,pinnedBitboard) && m.OriginSquare() == square);
         }
 
         public void SetAllSquares()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Typhoon.Model
 {
@@ -133,6 +134,7 @@ namespace Typhoon.Model
                 MagicBitboardFactory.BishopOffsets
             );
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard GetRookMoveBitboard(int square, Bitboard occupancyBitboard)
         {
             Debug.Assert(square >= 0 && square < 64);
@@ -140,6 +142,7 @@ namespace Typhoon.Model
             return RookMoves[square][index];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard GetBishopMoveBitboard(int square, Bitboard occupancyBitboard)
         {
             Debug.Assert(square >= 0 && square < 64);
@@ -383,23 +386,27 @@ namespace Typhoon.Model
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetColumn(int square)
         {
             Debug.Assert(square >= 0 && square < NUM_SQUARES);
             return 7 - square % 8;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetRow(int square)
         {
             Debug.Assert(square >= 0 && square < NUM_SQUARES);
             return 7 - square / 8;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreAligned(int square1, int square2, int square3)
         {
             return (Bitboards.LineBitboards[square1, square2] & Bitboards.SquareBitboards[square3]) != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CountBits(Bitboard bitboard)
         {
             int cnt = 0;
@@ -411,17 +418,20 @@ namespace Typhoon.Model
             return cnt;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void PopLsb(ref Bitboard bitboard)
         {
             bitboard &= (bitboard - 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int BitScanForward(this Bitboard bitboard)
         {
             Debug.Assert(bitboard != 0);
             return MultiplyDeBruijnBitPosition[((ulong)((long)bitboard & -(long)bitboard) * DeBruijnSequence) >> 58];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetSquareFromName(string name)
         {
             int col = name[0] - 'a';
@@ -429,6 +439,7 @@ namespace Typhoon.Model
             return 8 * row + (7 - col);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetNameFromSquare(int square)
         {
             Debug.Assert(square >= 0 && square < NUM_SQUARES);

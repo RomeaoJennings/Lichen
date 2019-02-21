@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace Typhoon.Model
 {
@@ -17,58 +18,51 @@ namespace Typhoon.Model
         public const int CASTLE_MASK = 0x80000;
         public const int CASTLE_DIR_MASK = 0x100000;
 
-        private int move;
+        private readonly int move;
 
-        public int OriginSquare
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int OriginSquare()
         {
-            get
-            {
-                return move & ORIGIN_MASK;
-            }
-        }
-        public int DestinationSquare
-        {
-            get
-            {
-                return (move & DEST_MASK) >> DEST_SHIFT;
-            }
-        }
-        public int CapturePiece
-        {
-            get
-            {
-                return (move & CAPTURE_MASK) >> CAPTURE_SHIFT;
-            }
-        }
-        public int PromotionType
-        {
-            get
-            {
-                return (move & PROM_MASK) >> PROM_SHIFT;
-            }
-        }
-        public bool IsEnPassent
-        {
-            get
-            {
-                return (move & EP_MASK) != 0;
-            }
-        }
-        public bool IsCastle
-        {
-            get
-            {
-                return (move & CASTLE_MASK) != 0;
-            }
-        }
-        public int CastleDirection
-        {
-            get
-            {
-                return move & CASTLE_DIR_MASK;
-            }
+            return move & ORIGIN_MASK;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int DestinationSquare()
+        {
+            return (move & DEST_MASK) >> DEST_SHIFT;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CapturePiece()
+        {
+            return (move & CAPTURE_MASK) >> CAPTURE_SHIFT;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int PromotionType()
+        {
+            return (move & PROM_MASK) >> PROM_SHIFT;     
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsEnPassent()
+        {
+            return (move & EP_MASK) != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsCastle()
+        {
+            return (move & CASTLE_MASK) != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CastleDirection()
+        {
+            return move & CASTLE_DIR_MASK;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Move(int origin, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
         {
             move = promotionType << 3;
@@ -80,6 +74,7 @@ namespace Typhoon.Model
 
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Move(int origin, int destination, bool enPassent, bool castle, int castleDirection = 0)
         {
             // Must be castle or enPassent
@@ -102,13 +97,7 @@ namespace Typhoon.Model
 
         public static bool operator ==(Move m1, Move m2)
         {
-            return
-                m1.DestinationSquare == m2.DestinationSquare &&
-                m1.OriginSquare == m2.OriginSquare &&
-                m1.CapturePiece == m2.CapturePiece &&
-                m1.PromotionType == m2.PromotionType &&
-                m1.IsEnPassent == m2.IsEnPassent &&
-                m1.IsCastle == m2.IsCastle;
+            return m1.move == m2.move;
         }
 
         public static bool operator !=(Move m1, Move m2)
@@ -128,22 +117,7 @@ namespace Typhoon.Model
 
         public override int GetHashCode()
         {
-            int hash =
-                OriginSquare << 8 ^
-                DestinationSquare << 16 ^
-                CapturePiece << 4 ^
-                PromotionType;
-            if (IsCastle)
-            {
-                hash ^= 0x63826364;
-            }
-
-            if (IsEnPassent)
-            {
-                hash ^= 0x12345654;
-            }
-
-            return hash;
+            return move;
         }
 
         public int CompareTo(object obj)
@@ -151,17 +125,17 @@ namespace Typhoon.Model
             try
             {
                 Move that = (Move)obj;
-                int origin = OriginSquare - that.OriginSquare;
+                int origin = OriginSquare() - that.OriginSquare();
                 if (origin != 0)
                 {
                     return origin;
                 }
-                int dest = DestinationSquare - that.DestinationSquare;
+                int dest = DestinationSquare() - that.DestinationSquare();
                 if (dest != 0)
                 {
                     return dest;
                 }
-                return PromotionType - that.PromotionType;
+                return PromotionType() - that.PromotionType();
             }
             catch (InvalidCastException)
             {
@@ -174,13 +148,13 @@ namespace Typhoon.Model
             string pieceStr = "KQRBNP";
 
             StringBuilder sb = new StringBuilder();
-            sb.Append(Bitboards.GetNameFromSquare(OriginSquare));
-            if (CapturePiece != Board.EMPTY)
+            sb.Append(Bitboards.GetNameFromSquare(OriginSquare()));
+            if (CapturePiece() != Board.EMPTY)
             {
                 sb.Append('x');
-                sb.Append(pieceStr[CapturePiece]);
+                sb.Append(pieceStr[CapturePiece()]);
             }
-            else if (IsEnPassent)
+            else if (IsEnPassent())
             {
                 sb.Append("xP(EP)");
             }
@@ -188,11 +162,11 @@ namespace Typhoon.Model
             {
                 sb.Append('-');
             }
-            sb.Append(Bitboards.GetNameFromSquare(DestinationSquare));
-            if (PromotionType != Board.EMPTY)
+            sb.Append(Bitboards.GetNameFromSquare(DestinationSquare()));
+            if (PromotionType() != Board.EMPTY)
             {
                 sb.Append('=');
-                sb.Append(pieceStr[PromotionType]);
+                sb.Append(pieceStr[PromotionType()]);
             }
             return sb.ToString();
         }
