@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Typhoon.Model;
 using UiComponents;
 
@@ -100,7 +101,7 @@ namespace UserInterface
         private List<Move> GetMovesByOrigin(int square)
         {
             Bitboard pinnedBitboard = model.GetPinnedPiecesBitboard();
-            return model.GetAllMoves().FindAll(m => model.IsLegalMove(m,pinnedBitboard) && m.OriginSquare() == square);
+            return (List<Move>)model.GetAllMoves().ToArray().Where(m => model.IsLegalMove(m,pinnedBitboard) && m.OriginSquare() == square);
         }
 
         public void SetAllSquares()

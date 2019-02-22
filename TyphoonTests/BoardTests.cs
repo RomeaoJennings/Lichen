@@ -39,7 +39,7 @@ namespace TyphoonTests
                     new Move(Board.F3, Board.E5, Board.PAWN),
                     new Move(Board.F3, Board.H4, Board.EMPTY)
                 };
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
                 Bitboard attacks = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES)
                     & Bitboards.KnightBitboards[Board.F3];
                 int square = Board.F3;
@@ -65,7 +65,7 @@ namespace TyphoonTests
                     new Move(Board.D2, Board.C4)
                 };
 
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
                 Bitboard destinationBitboard = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES);
 
                 board.GetAllStepPieceMoves(actualMoves, Board.KNIGHT, Board.WHITE, destinationBitboard);
@@ -87,7 +87,7 @@ namespace TyphoonTests
                     new Move(Board.B5, Board.C4)
                 };
 
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
                 Bitboard destinationBitboard = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES);
                 board.GetSlidingPieceMoves(
                     actualMoves,
@@ -112,7 +112,7 @@ namespace TyphoonTests
                     new Move(Board.C5, Board.C3)
                 };
 
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
                 Bitboard destinationBitboard = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES);
                 board.GetSlidingPieceMoves(
                     actualMoves,
@@ -135,7 +135,7 @@ namespace TyphoonTests
                     new Move(Board.D1, Board.H5, Board.KNIGHT)
                 };
 
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
 
                 Bitboard destinationBitboard = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES);
                 board.GetSlidingPieceMoves(
@@ -168,7 +168,7 @@ namespace TyphoonTests
                     new Move(Board.B5, Board.E8)
                 };
                 Bitboard destinationBitboard = ~board.GetPieceBitboard(Board.WHITE, Board.ALL_PIECES);
-                List<Move> actualMoves = new List<Move>();
+                MoveList actualMoves = new MoveList();
                 board.GetAllSlidingPieceMoves(actualMoves, Board.BISHOP, Board.WHITE, destinationBitboard);
                 TestUtils.TestArrayEquality(expectedWhiteBishopMoves, actualMoves.ToArray());
             }

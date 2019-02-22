@@ -13,25 +13,38 @@ namespace Perft
         static void Main(string[] args)
         {
             Board board = new Board();
-            Perft(board, 8);
+            Perft(board, 6);
         }
 
         static void Perft(Board board, int depth)
         {
             Debug.Assert(depth >= 1);
-            var start = DateTime.Now;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             ulong pinned = board.GetPinnedPiecesBitboard();
-            var moves = board.GetAllMoves().FindAll(m => board.IsLegalMove(m, pinned));
+            var moves = board.GetAllMoves();
+            int mvCnt = moves.Count;
             ulong total = 0;
             if (depth == 1)
             {
-                foreach (var move in moves)
-                    Console.WriteLine(move);
-                Console.WriteLine($"Total Moves: {moves.Count}");
+                int cnt = 0;
+
+                for (int i=0;i<mvCnt;i++)
+                {
+                    var move = moves.Get(i);
+                    if (board.IsLegalMove(move, pinned))
+                    {
+                        Console.WriteLine(move);
+                        cnt++;
+                    }
+                }
+                Console.WriteLine($"Total Moves: {cnt}");
                 return;
             }
-            foreach (var move in moves)
+             
+            for (int i=0;i<mvCnt;i++)
             {
+                var move = moves.Get(i);
                 ulong nodes = 0;
                 BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move);
                 board.DoMove(move);
@@ -40,30 +53,37 @@ namespace Perft
                 total += nodes;
                 board.UndoMove(bs);
             }
-            var time = DateTime.Now - start;
+            sw.Stop();
+            
             Console.WriteLine($"Total Nodes: {total}");
-            Console.WriteLine($"Elapsed Time: {time}");
-            Console.WriteLine($"Nodes Per Second: {total / time.TotalSeconds }");
+            Console.WriteLine($"Elapsed Time: {sw.Elapsed}");
+            Console.WriteLine($"Nodes Per Second: {(total / (ulong)sw.ElapsedMilliseconds) * 1000  }");
         }
 
         static void CountNodes(Board board, int depth, ref ulong nodes)
         {
             ulong pinned = board.GetPinnedPiecesBitboard();
-            var moves = board.GetAllMoves().FindAll(m => board.IsLegalMove(m, pinned));
-
+            var moves = board.GetAllMoves();
+            int mvCnt = moves.Count;
             if (depth == 1)
             {
-                nodes += (ulong)moves.Count;
+
+                for (int i=0;i<mvCnt;i++)
+                    if (board.IsLegalMove(moves.Get(i),pinned))
+                        nodes++;
             }
             else
             {
-                
-                foreach (var move in moves)
+                for (int i=0;i<mvCnt;i++)
                 {
-                    BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move);
-                    board.DoMove(move);
-                    CountNodes(board, depth - 1, ref nodes);
-                    board.UndoMove(bs);
+                    var move = moves.Get(i);
+                    if (board.IsLegalMove(move, pinned))
+                    {
+                        BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move);
+                        board.DoMove(move);
+                        CountNodes(board, depth - 1, ref nodes);
+                        board.UndoMove(bs);
+                    }
                 }
             }
         }

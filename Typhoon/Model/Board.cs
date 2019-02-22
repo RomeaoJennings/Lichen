@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Typhoon.Model
 {
@@ -112,10 +113,12 @@ namespace Typhoon.Model
             get { return PlayerToMove == WHITE ? BLACK : WHITE; }
         }
 
-        public Bitboard AllPiecesBitboard
-        {
-            get { return pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES]; }
-        }
+        //public Bitboard AllPiecesBitboard
+        //{
+        //    get { return pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES]; }
+        //}
+
+        private Bitboard allPiecesBitboard;
 
         public bool InCheck
         {
@@ -174,6 +177,7 @@ namespace Typhoon.Model
             pieces[BLACK][QUEEN] = 0x1000000000000000UL;
             pieces[BLACK][KING] = 0x800000000000000UL;
             pieces[BLACK][ALL_PIECES] = 0xFFFF000000000000;
+            allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
 
             InitPieceSquares();
         }
@@ -212,12 +216,13 @@ namespace Typhoon.Model
             return result;
         }
 
-        public void GetCastleMoves(List<Move> list)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetCastleMoves(MoveList list)
         {
             if (PlayerToMove == WHITE)
             {
                 if (CastleRights.WhiteKing &&
-                    (AllPiecesBitboard & 0x6UL) == 0 &&
+                    (allPiecesBitboard & 0x6UL) == 0 &&
                     AttackersTo(E1, BLACK) == 0 &&
                     AttackersTo(F1, BLACK) == 0 &&
                     AttackersTo(G1, BLACK) == 0)
@@ -225,7 +230,7 @@ namespace Typhoon.Model
                     list.Add(new Move(E1, G1, false, true, KING));
                 }
                 if (CastleRights.WhiteQueen &&
-                    (AllPiecesBitboard & 0x70UL) == 0 &&
+                    (allPiecesBitboard & 0x70UL) == 0 &&
                     AttackersTo(E1, BLACK) == 0 &&
                     AttackersTo(D1, BLACK) == 0 &&
                     AttackersTo(C1, BLACK) == 0)
@@ -236,7 +241,7 @@ namespace Typhoon.Model
             else
             {
                 if (CastleRights.BlackKing &&
-                    (AllPiecesBitboard & 0x600000000000000UL) == 0 &&
+                    (allPiecesBitboard & 0x600000000000000UL) == 0 &&
                     AttackersTo(E8, WHITE) == 0 &&
                     AttackersTo(F8, WHITE) == 0 &&
                     AttackersTo(G8, WHITE) == 0)
@@ -244,7 +249,7 @@ namespace Typhoon.Model
                     list.Add(new Move(E8, G8, false, true, KING));
                 }
                 if (CastleRights.BlackQueen &&
-                    (AllPiecesBitboard & 0x7000000000000000UL) == 0 &&
+                    (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
                     AttackersTo(E8, WHITE) == 0 &&
                     AttackersTo(D8, WHITE) == 0 &&
                     AttackersTo(C8, WHITE) == 0)
@@ -254,7 +259,7 @@ namespace Typhoon.Model
             }
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
         {
             int opponent = Opponent;
@@ -340,8 +345,10 @@ namespace Typhoon.Model
             }
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             PlayerToMove = opponent;
+            allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UndoMove(BoardState previousState)
         {
             Move move = previousState.Move;
@@ -407,8 +414,10 @@ namespace Typhoon.Model
                     squares[originSquare] = PAWN;
                 }
             }
+            allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateCastleRights(ref int originSquare, ref int destinationSquare)
         {
             if (originSquare == E1)
@@ -441,8 +450,6 @@ namespace Typhoon.Model
                     CastleRights.BlackKing,
                     CastleRights.BlackQueen);
             }
-
-
             else if (originSquare == E8)
             {
                 CastleRights = new CastleRights(
@@ -470,14 +477,13 @@ namespace Typhoon.Model
                     false);
             }
         }
-        
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetPinnedPiecesBitboard()
         {
             int opponent = Opponent;
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
             Bitboard result = 0;
-            Bitboard allPiecesBitboard = AllPiecesBitboard;
             Bitboard sliders = (pieces[opponent][QUEEN] | pieces[opponent][ROOK]) &
                 (Bitboards.RowBitboards[kingSquare] | Bitboards.ColumnBitboards[kingSquare]);
             sliders |= (pieces[opponent][QUEEN] | pieces[opponent][BISHOP]) &
@@ -503,6 +509,7 @@ namespace Typhoon.Model
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsLegalMove(Move move, Bitboard pinnedPiecesBitboard)
         {
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
@@ -518,7 +525,7 @@ namespace Typhoon.Model
             else if (move.IsEnPassent())
             {
                 Bitboard capSqBB = Bitboards.SquareBitboards[destinationSquare + Bitboards.EnPassentOffset[PlayerToMove]];
-                Bitboard occupied = AllPiecesBitboard 
+                Bitboard occupied = allPiecesBitboard 
                     ^ capSqBB ^ Bitboards.SquareBitboards[originSquare] 
                     ^ Bitboards.SquareBitboards[destinationSquare];
                 return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) & 
@@ -537,10 +544,11 @@ namespace Typhoon.Model
                     Bitboards.AreAligned(kingSquare, originSquare, destinationSquare);
             }
         }
-        
-        public List<Move> GetAllMoves()
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public MoveList GetAllMoves()
         {
-            List<Move> result = new List<Move>(32);
+            MoveList result = new MoveList();
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
             Bitboard checkersBitboard = AttackersTo(kingSquare, Opponent);
             if (checkersBitboard != 0)
@@ -555,7 +563,8 @@ namespace Typhoon.Model
             return result;
         }
 
-        public void GetMoves(MoveType moveType, List<Move> list, Bitboard destinationBitboard)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetMoves(MoveType moveType, MoveList list, Bitboard destinationBitboard)
         {
             // No need to get King moves for evasions, because they are 
             // already generated before call to GetMoves
@@ -573,7 +582,8 @@ namespace Typhoon.Model
             GetAllPawnCaptureMoves(list, PlayerToMove, destinationBitboard);
         }
 
-        public void GetEvasionMoves(List<Move> list, Bitboard checkersBitboard)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetEvasionMoves(MoveList list, Bitboard checkersBitboard)
         {
             bool notDoubleCheck = (checkersBitboard & (checkersBitboard - 1)) == 0;
             int kingSquare = pieces[PlayerToMove][KING].BitScanForward();
@@ -603,8 +613,9 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GenerateMovesFromBitboard(
-            List<Move> list,
+            MoveList list,
             Bitboard attacks,
             int originSquare)
         {
@@ -616,8 +627,9 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetAllStepPieceMoves(
-            List<Move> list,
+            MoveList list,
             int pieceType,
             int color,
             Bitboard destinationBitboard)
@@ -637,8 +649,9 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetAllSlidingPieceMoves(
-            List<Move> list,
+            MoveList list,
             int pieceType,
             int color, Bitboard destinationBitboard)
         {
@@ -653,13 +666,14 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetSlidingPieceMoves(
-            List<Move> list,
+            MoveList list,
             int pieceType,
             int square,
             Bitboard destinationBitboard)
         {
-            Bitboard allPieces = AllPiecesBitboard;
+            Bitboard allPieces = allPiecesBitboard;
             Bitboard attacks = 0;
             if (pieceType == ROOK || pieceType == QUEEN)
             {
@@ -673,8 +687,9 @@ namespace Typhoon.Model
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetAllPawnCaptureMoves(
-            List<Move> list,
+            MoveList list,
             int color,
             Bitboard destinationBitboard)
         {
@@ -748,12 +763,13 @@ namespace Typhoon.Model
             GeneratePromotions(list, rightPromotionAttacks, rightOffset);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetAllPawnPushMoves(
-            List<Move> list,
+            MoveList list,
             int color,
             Bitboard destinationBitboard)
         {
-            Bitboard emptySquares = ~AllPiecesBitboard;
+            Bitboard emptySquares = ~allPiecesBitboard;
             Bitboard pawnSingleMoves = pieces[color][PAWN];
 
             Bitboard pawnDoubleMoves;
@@ -795,8 +811,9 @@ namespace Typhoon.Model
             GeneratePromotions(list, promotionPawns, pawnSingleMoveOffset);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GeneratePromotions(
-            List<Move> list,
+            MoveList list,
             Bitboard destinationBitboard,
             int originOffset)
         {
@@ -808,8 +825,9 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GeneratePromotions(
-            List<Move> list,
+            MoveList list,
             int originSquare,
             int destinationSquare)
         {
@@ -820,8 +838,9 @@ namespace Typhoon.Model
             list.Add(new Move(originSquare, destinationSquare, capturedPiece, KNIGHT));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GeneratePawnMovesFromBitboard(
-            List<Move> list,
+            MoveList list,
             Bitboard destinationsBitboard,
             int originOffset)
         {
@@ -835,10 +854,11 @@ namespace Typhoon.Model
         }
 
         // Returns all pieces of the passed color that attack the relevent square.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard AttackersTo(int square, int color)
         {
             int opponent = color == WHITE ? BLACK : WHITE;
-            Bitboard occupancyBitboard = AllPiecesBitboard;
+            Bitboard occupancyBitboard = allPiecesBitboard;
 
             Bitboard queenBishop = pieces[color][QUEEN];
             Bitboard queenRook = queenBishop;
