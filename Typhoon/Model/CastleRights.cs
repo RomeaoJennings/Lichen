@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Typhoon.Model
 {
@@ -36,6 +37,28 @@ namespace Typhoon.Model
             return new CastleRights(whiteKing, whiteQueen, blackKing, blackQueen);
         }
 
+        public string ToFen()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (WhiteKing)
+                sb.Append("K");
+            if (WhiteQueen)
+                sb.Append("Q");
+            if (BlackKing)
+                sb.Append("k");
+            if (BlackQueen)
+                sb.Append("q");
+            if (sb.Length > 0)
+            {
+                sb.Append(" ");
+                return sb.ToString();
+            }
+            else
+            {
+                return "- ";
+            }
+        }
+
         public static bool operator ==(CastleRights c1, CastleRights c2)
         {
             return c1.WhiteKing == c2.WhiteKing &&
@@ -51,7 +74,7 @@ namespace Typhoon.Model
 
         public override bool Equals(object obj)
         {
-            if (typeof(CastleRights) == obj.GetType())
+            if (obj is CastleRights)
             {
                 return (CastleRights)obj == this;
             }

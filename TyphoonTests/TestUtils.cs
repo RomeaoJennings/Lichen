@@ -37,5 +37,17 @@ namespace TyphoonTests
             TestArrayEquality(expectedMoves, actualMoves.ToArray());
         }
 
+        public static string StripMoveNumsFromFen(string fen)
+        {
+            int lastSpace = fen.LastIndexOf(' ');
+            int secondLastSpace = fen.LastIndexOf(' ', lastSpace - 1);
+            return fen.Substring(0, secondLastSpace);
+        }
+
+        public static bool CompareFen(string fen1, string fen2)
+        {
+            return StripMoveNumsFromFen(fen1) == StripMoveNumsFromFen(fen2);
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Typhoon.Model;
@@ -426,6 +427,65 @@ namespace TyphoonTests
             {
                 Board board = Board.FromFen("rnbqkbnr/2pppppp/1p6/pB5Q/4P3/8/PPPP1PPP/RNB1K1NR b KQkq - 1 3");
                 Assert.AreEqual(0x14000000000000UL, board.GetPinnedPiecesBitboard());
+            }
+        }
+
+        [TestClass]
+        public class ToFen
+        {
+            [TestMethod]
+            public void GeneratesCorrectlyFromOpeningPosition()
+            {
+                Board board = new Board();
+                Assert.AreEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", board.ToFen());
+            }
+        }
+
+        [TestClass]
+        public class ZobristHash
+        {
+            [TestMethod]
+            public void UniqueForEachPosition()
+            {
+                Random r = new Random();
+                Board b = new Board();
+                Dictionary<ulong, string> dictionary = new Dictionary<ulong, string>();
+                Stack<BoardState> stack = new Stack<BoardState>();
+
+                int cnt = 0;
+                Bitboard pinners = b.GetPinnedPiecesBitboard();
+                var moves = b.GetAllMoves().ToArray().Where(m => b.IsLegalMove(m, pinners)).ToList();
+                // Add 100 random moves, unless checkmate or stalemate occurs first.
+                while (moves.Count > 0 && cnt++ <= 1000)
+                {
+                    var moveToMake = moves[r.Next(moves.Count)];
+                    stack.Push(new BoardState(moveToMake, b));
+                    b.DoMove(moveToMake);
+                    // If move already exists in table, but not matching fen, then we have a problem.
+                    if (dictionary.ContainsKey(b.Zobrist) &&
+                        dictionary[b.Zobrist] != TestUtils.StripMoveNumsFromFen(b.ToFen()))
+                    {
+                        Assert.Fail();
+                    }
+                    if (!dictionary.ContainsKey(b.Zobrist))
+                    {
+                        dictionary.Add(b.Zobrist, TestUtils.StripMoveNumsFromFen(b.ToFen()));
+                    }
+                    
+                    pinners = b.GetPinnedPiecesBitboard();
+                    moves = b.GetAllMoves().ToArray().Where(m => b.IsLegalMove(m, pinners)).ToList();
+                }
+
+                while (stack.Count != 1)
+                {
+                    var curr = stack.Pop();
+                    b.UndoMove(curr);
+                    if (!dictionary.ContainsKey(b.Zobrist) || 
+                        dictionary[b.Zobrist] != TestUtils.StripMoveNumsFromFen(b.ToFen()))
+                    {
+                        Assert.Fail();
+                    }
+                }
             }
         }
     }

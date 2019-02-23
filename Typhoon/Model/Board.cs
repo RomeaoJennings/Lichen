@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Typhoon.Model
 {
@@ -198,6 +199,7 @@ namespace Typhoon.Model
                 }
                 result.halfMoveClock = int.Parse(elements[4]);
                 result.fullMoveNumber = int.Parse(elements[5]);
+                result.allPiecesBitboard = result.pieces[WHITE][ALL_PIECES] | result.pieces[BLACK][ALL_PIECES];
                 return result;
             }
             catch (Exception e)
@@ -383,6 +385,7 @@ namespace Typhoon.Model
             }
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             playerToMove = opponent;
+            zobristHash ^= ZobristHash.WhiteToMoveHash;
             if (playerToMove == WHITE)
                 fullMoveNumber++;
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
@@ -984,7 +987,59 @@ namespace Typhoon.Model
         
         public string ToFen()
         {
-            throw new NotImplementedException();
+            StringBuilder sb = new StringBuilder();
+            string[] piecesCodes = { "KQRBNP", "kqrbnp" };
+            string[] playerToMoveStr = { " w ", " b " };
+            int blankSquareCntr = 0;
+            for (int square = 63; square >= 0; square--)
+            {
+                int color = (pieces[WHITE][ALL_PIECES] & Bitboards.SquareBitboards[square]) != 0 ? WHITE : BLACK;
+                int pieceType = squares[square];
+                if (pieceType == EMPTY)
+                {
+                    blankSquareCntr++;
+                }
+                else
+                {
+                    // Piece in this square, so see if we need to dump blank squares
+                    AppendBlankSquares(ref blankSquareCntr, sb);
+                    sb.Append(piecesCodes[color][pieceType]);
+                }
+
+                // If at end of row, dump any blank squares and add '/'
+                if (square % 8 == 0)
+                {
+                    AppendBlankSquares(ref blankSquareCntr, sb);
+                    if (square != 0)
+                    {
+                        sb.Append('/');
+                    }
+                }
+            }
+            sb.Append(playerToMoveStr[playerToMove]);
+            sb.Append(castleRights.ToFen());
+            if (enPassentBitboard != 0)
+            {
+                sb.Append(Bitboards.GetNameFromSquare(enPassentBitboard.BitScanForward()));
+            }
+            else
+            {
+                sb.Append('-');
+            }
+            sb.Append(' ');
+            sb.Append(halfMoveClock);
+            sb.Append(' ');
+            sb.Append(fullMoveNumber);
+            return sb.ToString();
+        }
+
+        private void AppendBlankSquares(ref int blankSquareCntr, StringBuilder sb)
+        {
+            if (blankSquareCntr != 0)
+            {
+                sb.Append(blankSquareCntr);
+                blankSquareCntr = 0;
+            }   
         }
     }
 }
