@@ -13,7 +13,7 @@ namespace Perft
         static void Main(string[] args)
         {
             Board board = new Board();
-            Perft(board, 6);
+            Perft(board, 8);
         }
 
         static void Perft(Board board, int depth)
