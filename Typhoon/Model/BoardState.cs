@@ -10,15 +10,17 @@ namespace Typhoon.Model
 
     public struct BoardState
     {
-        public CastleRights CastleRights { get; private set; }
-        public Bitboard EnPassentBitboard { get; private set; }
-        public Move Move { get; private set; }
+        public CastleRights CastleRights;
+        public Bitboard EnPassentBitboard;
+        public Move Move;
+        public ulong Zobrist;
 
-        public BoardState(CastleRights castleRights, Bitboard enPassentBitboard, Move move)
+        public BoardState(CastleRights castleRights, Bitboard enPassentBitboard, Move move, ulong zobrist)
         {
             CastleRights = castleRights;
             EnPassentBitboard = enPassentBitboard;
             Move = move;
+            Zobrist = zobrist;
         }
     }
 }

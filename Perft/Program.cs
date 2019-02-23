@@ -13,7 +13,7 @@ namespace Perft
         static void Main(string[] args)
         {
             Board board = new Board();
-            Perft(board, 8);
+            Perft(board, 7);
         }
 
         static void Perft(Board board, int depth)
@@ -46,7 +46,7 @@ namespace Perft
             {
                 var move = moves.Get(i);
                 ulong nodes = 0;
-                BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move);
+                BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move, board.Zobrist);
                 board.DoMove(move);
                 CountNodes(board, depth - 1, ref nodes);
                 Console.WriteLine($"Move: {move}: {nodes}");
@@ -79,7 +79,7 @@ namespace Perft
                     var move = moves.Get(i);
                     if (board.IsLegalMove(move, pinned))
                     {
-                        BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move);
+                        BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move, board.Zobrist);
                         board.DoMove(move);
                         CountNodes(board, depth - 1, ref nodes);
                         board.UndoMove(bs);

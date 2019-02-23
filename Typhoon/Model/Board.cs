@@ -302,6 +302,9 @@ namespace Typhoon.Model
                         pieces[playerToMove][PAWN] ^= destinationSquareBitboard;
                         pieces[playerToMove][promotionType] ^= destinationSquareBitboard;
                         squares[destinationSquare] = promotionType;
+
+                        zobristHash ^= ZobristHash.PieceHashes[playerToMove][PAWN][destinationSquare] ^
+                            ZobristHash.PieceHashes[playerToMove][promotionType][destinationSquare];
                     }
                 }
 
@@ -310,9 +313,8 @@ namespace Typhoon.Model
                 {
                     pieces[opponent][capturePiece] ^= destinationSquareBitboard;
                     pieces[opponent][ALL_PIECES] ^= destinationSquareBitboard;
+                    zobristHash ^= ZobristHash.PieceHashes[opponent][capturePiece][destinationSquare];
                 }
-
-                
             }
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             playerToMove = opponent;
@@ -331,6 +333,7 @@ namespace Typhoon.Model
             playerToMove = Opponent;
             enPassentBitboard = previousState.EnPassentBitboard;
             castleRights = previousState.CastleRights;
+            zobristHash = previousState.Zobrist;
 
             if (move.IsCastle())
             {
@@ -437,9 +440,13 @@ namespace Typhoon.Model
             if (originSquare == E1)
             {
                 if (castleRights.WhiteKing)
-                { /* TODO: Zobrist */ }
+                {
+                    zobristHash ^= ZobristHash.CastleWhiteKingHash;
+                }
                 if (castleRights.WhiteQueen)
-                { /* TODO: Zobrist */ }
+                {
+                    zobristHash ^= ZobristHash.CastleWhiteQueenHash;
+                }
                 castleRights = new CastleRights(
                     false,
                     false,
@@ -449,6 +456,7 @@ namespace Typhoon.Model
             else if (castleRights.WhiteKing &&
                 (originSquare == H1 || destinationSquare == H1))
             {
+                zobristHash ^= ZobristHash.CastleWhiteKingHash;
                 castleRights = new CastleRights(
                     false,
                     castleRights.WhiteQueen,
@@ -458,6 +466,7 @@ namespace Typhoon.Model
             else if (castleRights.WhiteQueen &&
                 (originSquare == A1 || destinationSquare == A1))
             {
+                zobristHash ^= ZobristHash.CastleWhiteQueenHash;
                 castleRights = new CastleRights(
                     castleRights.WhiteKing,
                     false,
@@ -466,6 +475,14 @@ namespace Typhoon.Model
             }
             else if (originSquare == E8)
             {
+                if (castleRights.BlackKing)
+                {
+                    zobristHash ^= ZobristHash.CastleBlackKingHash;
+                }
+                if (castleRights.BlackQueen)
+                {
+                    zobristHash ^= ZobristHash.CastleBlackQueenHash;
+                }
                 castleRights = new CastleRights(
                     castleRights.WhiteKing,
                     castleRights.WhiteQueen,
@@ -475,6 +492,7 @@ namespace Typhoon.Model
             else if (castleRights.BlackKing &&
                 (originSquare == H8 || destinationSquare == H8))
             {
+                zobristHash ^= ZobristHash.CastleBlackKingHash;
                 castleRights = new CastleRights(
                     castleRights.WhiteKing,
                     castleRights.WhiteQueen,
@@ -484,6 +502,7 @@ namespace Typhoon.Model
             else if (castleRights.BlackQueen &&
                 (originSquare == A8 || destinationSquare == A8))
             {
+                zobristHash ^= ZobristHash.CastleBlackQueenHash;
                 castleRights = new CastleRights(
                     castleRights.WhiteKing,
                     castleRights.WhiteQueen,

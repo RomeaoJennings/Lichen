@@ -63,7 +63,7 @@ namespace UserInterface
                 if (mv.DestinationSquare() == square)
                 {
                     view.ResetHighlights();
-                    BoardState bs = new BoardState(model.CastleRights, model.EnPassentBitboard, mv);
+                    BoardState bs = new BoardState(model.CastleRights, model.EnPassentBitboard, mv, model.Zobrist);
                     previousStates.Push(bs);
                     if (mv.PromotionType() != Board.EMPTY)
                     {

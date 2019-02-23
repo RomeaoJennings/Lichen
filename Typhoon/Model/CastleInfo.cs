@@ -12,8 +12,7 @@ namespace Typhoon.Model
         public readonly int RookDestination;
         public readonly Bitboard KingBitboard;
         public readonly Bitboard RookBitboard;
-        public readonly ulong KingZobrist;
-        public readonly ulong RookZobrist;
+        public readonly ulong Zobrist;
 
         public CastleInfo(
             int kingOrigin,
@@ -29,9 +28,9 @@ namespace Typhoon.Model
             KingBitboard = Bitboards.SquareBitboards[kingOrigin] | Bitboards.SquareBitboards[kingDestination];
             RookBitboard = Bitboards.SquareBitboards[rookOrigin] | Bitboards.SquareBitboards[rookDestination];
 
-            KingZobrist = ZobristHash.PieceHashes[color][Board.KING][kingOrigin] ^
-                ZobristHash.PieceHashes[color][Board.KING][kingDestination];
-            RookZobrist = ZobristHash.PieceHashes[color][Board.ROOK][rookOrigin] ^
+            Zobrist = ZobristHash.PieceHashes[color][Board.KING][kingOrigin] ^
+                ZobristHash.PieceHashes[color][Board.KING][kingDestination] ^
+                ZobristHash.PieceHashes[color][Board.ROOK][rookOrigin] ^
                 ZobristHash.PieceHashes[color][Board.ROOK][rookDestination];
         }
     }
