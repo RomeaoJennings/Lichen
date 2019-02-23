@@ -374,14 +374,14 @@ namespace Typhoon.Model
             CastleInfo[][] result = new CastleInfo[2][];
             result[WHITE] = new CastleInfo[]
             {
-                new CastleInfo(Board.E1, Board.G1, Board.H1, Board.F1, 0xAUL, 0x5UL),
-                new CastleInfo(Board.E1, Board.C1, Board.A1, Board.D1, 0x28UL,0x90UL)
+                new CastleInfo(Board.E1, Board.G1, Board.H1, Board.F1, WHITE),
+                new CastleInfo(Board.E1, Board.C1, Board.A1, Board.D1, WHITE)
             };
 
             result[BLACK] = new CastleInfo[]
             {
-                new CastleInfo(Board.E8, Board.G8, Board.H8, Board.F8, 0xA00000000000000UL, 0x500000000000000UL),
-                new CastleInfo(Board.E8, Board.C8, Board.A8, Board.D8, 0x2800000000000000UL,0x9000000000000000UL)
+                new CastleInfo(Board.E8, Board.G8, Board.H8, Board.F8, BLACK),
+                new CastleInfo(Board.E8, Board.C8, Board.A8, Board.D8, BLACK)
             };
             return result;
         }

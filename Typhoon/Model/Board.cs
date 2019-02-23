@@ -107,12 +107,14 @@ namespace Typhoon.Model
         private int halfMoveClock;
         private int fullMoveNumber;
         private CastleRights castleRights;
+        private ulong zobristHash;
 
         public int PlayerToMove { get { return playerToMove; } }
         public int HalfMoveClock { get { return halfMoveClock; } }
         public int FullMoveNumber { get { return fullMoveNumber; } }
         public Bitboard EnPassentBitboard { get { return enPassentBitboard; } }
         public CastleRights CastleRights { get { return castleRights; } }
+        public ulong Zobrist {  get { return zobristHash; } }
 
         public int Opponent
         {
@@ -145,6 +147,7 @@ namespace Typhoon.Model
             halfMoveClock = copy.halfMoveClock;
             fullMoveNumber = copy.fullMoveNumber;
             enPassentBitboard = copy.enPassentBitboard;
+            zobristHash = copy.zobristHash;
         }
 
         private void NewGame()
@@ -154,6 +157,7 @@ namespace Typhoon.Model
             fullMoveNumber = 1;
             halfMoveClock = 0;
             enPassentBitboard = 0;
+            zobristHash = ZobristHash.NewGameHash;
 
             pieces = new Bitboard[2][];
             pieces[WHITE] = new Bitboard[7];
@@ -213,48 +217,6 @@ namespace Typhoon.Model
             return result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GetCastleMoves(MoveList list)
-        {
-            if (playerToMove == WHITE)
-            {
-                if (castleRights.WhiteKing &&
-                    (allPiecesBitboard & 0x6UL) == 0 &&
-                    AttackersTo(E1, BLACK) == 0 &&
-                    AttackersTo(F1, BLACK) == 0 &&
-                    AttackersTo(G1, BLACK) == 0)
-                {
-                    list.Add(new Move(E1, G1, false, true, KING));
-                }
-                if (castleRights.WhiteQueen &&
-                    (allPiecesBitboard & 0x70UL) == 0 &&
-                    AttackersTo(E1, BLACK) == 0 &&
-                    AttackersTo(D1, BLACK) == 0 &&
-                    AttackersTo(C1, BLACK) == 0)
-                {
-                    list.Add(new Move(E1, C1, false, true, QUEEN));
-                }
-            }
-            else
-            {
-                if (castleRights.BlackKing &&
-                    (allPiecesBitboard & 0x600000000000000UL) == 0 &&
-                    AttackersTo(E8, WHITE) == 0 &&
-                    AttackersTo(F8, WHITE) == 0 &&
-                    AttackersTo(G8, WHITE) == 0)
-                {
-                    list.Add(new Move(E8, G8, false, true, KING));
-                }
-                if (castleRights.BlackQueen &&
-                    (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
-                    AttackersTo(E8, WHITE) == 0 &&
-                    AttackersTo(D8, WHITE) == 0 &&
-                    AttackersTo(C8, WHITE) == 0)
-                {
-                    list.Add(new Move(E8, C8, false, true, QUEEN));
-                }
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
@@ -268,6 +230,7 @@ namespace Typhoon.Model
             // Reset En Passent Bitboard, If Currently Set
             if (enPassentBitboard != 0)
             {
+                zobristHash ^= ZobristHash.EnPassentSquareHashes[enPassentBitboard.BitScanForward()];
                 enPassentBitboard = 0;
             }
 
@@ -282,6 +245,8 @@ namespace Typhoon.Model
                 squares[castleInfo.RookOrigin] = EMPTY;
                 squares[castleInfo.KingDestination] = KING;
                 squares[castleInfo.RookDestination] = ROOK;
+
+                zobristHash ^= castleInfo.Zobrist;
             }
             else // Handle non-castle moves, including promotions and en passent
             {
@@ -293,11 +258,15 @@ namespace Typhoon.Model
                 squares[originSquare] = EMPTY;
                 pieces[playerToMove][movedPiece] ^= originSquareBitboard;
                 pieces[playerToMove][ALL_PIECES] ^= originSquareBitboard;
+                
 
                 // Update Destination Square
                 squares[destinationSquare] = movedPiece;
                 pieces[playerToMove][movedPiece] ^= destinationSquareBitboard;
                 pieces[playerToMove][ALL_PIECES] ^= destinationSquareBitboard;
+
+                zobristHash ^= ZobristHash.PieceHashes[playerToMove][movedPiece][destinationSquare] ^
+                    ZobristHash.PieceHashes[playerToMove][movedPiece][originSquare];
 
                 // Handle En Passent and Promotion
                 if (squares[destinationSquare] == PAWN)
@@ -311,15 +280,20 @@ namespace Typhoon.Model
                         pieces[opponent][PAWN] ^= enPassentTargetBitboard;
                         pieces[opponent][ALL_PIECES] ^= enPassentTargetBitboard;
                         squares[enPassentSquare] = EMPTY;
+                        zobristHash ^= ZobristHash.PieceHashes[opponent][PAWN][enPassentSquare];
                     }
                     // Set En Passent Square if double pawn push
                     else if (destinationSquare - originSquare == 16) // White double push
                     {
-                        enPassentBitboard = Bitboards.SquareBitboards[destinationSquare - 8];
+                        int targetSquare = destinationSquare - 8;
+                        zobristHash ^= ZobristHash.EnPassentSquareHashes[targetSquare];
+                        enPassentBitboard = Bitboards.SquareBitboards[targetSquare];
                     }
                     else if (destinationSquare - originSquare == -16) // Black double push
                     {
-                        enPassentBitboard = Bitboards.SquareBitboards[destinationSquare + 8];
+                        int targetSquare = destinationSquare + 8;
+                        zobristHash ^= ZobristHash.EnPassentSquareHashes[targetSquare];
+                        enPassentBitboard = Bitboards.SquareBitboards[targetSquare];
                     }
 
                     // Swap promotion piece for pawn when promotion occurs
@@ -412,6 +386,49 @@ namespace Typhoon.Model
                 }
             }
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetCastleMoves(MoveList list)
+        {
+            if (playerToMove == WHITE)
+            {
+                if (castleRights.WhiteKing &&
+                    (allPiecesBitboard & 0x6UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(F1, BLACK) == 0 &&
+                    AttackersTo(G1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, G1, false, true, KING));
+                }
+                if (castleRights.WhiteQueen &&
+                    (allPiecesBitboard & 0x70UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(D1, BLACK) == 0 &&
+                    AttackersTo(C1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, C1, false, true, QUEEN));
+                }
+            }
+            else
+            {
+                if (castleRights.BlackKing &&
+                    (allPiecesBitboard & 0x600000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(F8, WHITE) == 0 &&
+                    AttackersTo(G8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, G8, false, true, KING));
+                }
+                if (castleRights.BlackQueen &&
+                    (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(D8, WHITE) == 0 &&
+                    AttackersTo(C8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, C8, false, true, QUEEN));
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
