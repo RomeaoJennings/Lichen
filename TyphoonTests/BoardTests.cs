@@ -16,13 +16,13 @@ namespace TyphoonTests
             [TestMethod]
             public void ComputesCorrectly()
             {
-                Board board = Board.FromFEN("rnbqkbnr/2p1pppp/1p2B3/1R1p3Q/2PKPN2/2N5/P2P1PPP/2B4R b k - 12 16");
+                Board board = Board.FromFen("rnbqkbnr/2p1pppp/1p2B3/1R1p3Q/2PKPN2/2N5/P2P1PPP/2B4R b k - 12 16");
                 Assert.AreEqual(0x8413C200000UL, board.AttackersTo(Board.D5, Board.WHITE));
 
-                board = Board.FromFEN("rnbqkbnr/2pp2pp/R3pp2/1P1P4/5N2/6PB/1PP1PP1P/1NBQK2R b Kk - 2 9");
+                board = Board.FromFen("rnbqkbnr/2pp2pp/R3pp2/1P1P4/5N2/6PB/1PP1PP1P/1NBQK2R b Kk - 2 9");
                 Assert.AreEqual(0x801004010000UL, board.AttackersTo(Board.E6, Board.WHITE));
 
-                board = Board.FromFEN("2b1kbnr/2ppq1pp/r3Pp2/1P6/3n1N2/6PB/1PP1PP1P/1NBQK2R w Kk - 5 13");
+                board = Board.FromFen("2b1kbnr/2ppq1pp/r3Pp2/1P6/3n1N2/6PB/1PP1PP1P/1NBQK2R w Kk - 5 13");
                 Assert.AreEqual(0x18800010000000UL, board.AttackersTo(Board.E6, Board.BLACK));
             }
         }
@@ -33,7 +33,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesCorrectMovesForKnightOnF3()
             {
-                Board board = Board.FromFEN("r1bqkbnr/2p2ppp/p2p4/1p2p1B1/3nP3/3P1N2/PPPN1PPP/R2QKBR1 w Qkq b6 0 7");
+                Board board = Board.FromFen("r1bqkbnr/2p2ppp/p2p4/1p2p1B1/3nP3/3P1N2/PPPN1PPP/R2QKBR1 w Qkq b6 0 7");
                 Move[] expectedMoves = {
                     new Move(Board.F3, Board.D4, Board.KNIGHT),
                     new Move(Board.F3, Board.E5, Board.PAWN),
@@ -55,7 +55,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesCorrectMoves()
             {
-                Board board = Board.FromFEN("r1bqkbnr/2p2ppp/p2p4/1p2p1B1/3nP3/3P1N2/PPPN1PPP/R2QKBR1 w Qkq b6 0 7");
+                Board board = Board.FromFen("r1bqkbnr/2p2ppp/p2p4/1p2p1B1/3nP3/3P1N2/PPPN1PPP/R2QKBR1 w Qkq b6 0 7");
                 Move[] expectedMoves = {
                     new Move(Board.F3, Board.D4, Board.KNIGHT),
                     new Move(Board.F3, Board.E5, Board.PAWN),
@@ -79,7 +79,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesCorrectBishopMoves()
             {
-                Board board = Board.FromFEN("r1bqkb1r/pppp1ppp/2n2n2/1B2p3/P3P3/3P4/1PP2PPP/RNBQK1NR b KQkq - 0 4");
+                Board board = Board.FromFen("r1bqkb1r/pppp1ppp/2n2n2/1B2p3/P3P3/3P4/1PP2PPP/RNBQK1NR b KQkq - 0 4");
                 Move[] expectedMoves =
                 {
                     new Move(Board.B5, Board.A6),
@@ -100,7 +100,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesCorrectRookMoves()
             {
-                Board board = Board.FromFEN("rnbqkbn1/ppp1ppp1/6r1/2Rp3p/7P/8/PPPPPPP1/RNBQKBN1 w Qq d6 0 5");
+                Board board = Board.FromFen("rnbqkbn1/ppp1ppp1/6r1/2Rp3p/7P/8/PPPPPPP1/RNBQKBN1 w Qq d6 0 5");
                 Move[] expectedMoves =
                 {
                     new Move(Board.C5, Board.B5),
@@ -125,7 +125,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesCorrectQueenMoves()
             {
-                Board board = Board.FromFEN("r1bqkb1r/pppp1ppp/2n5/1B2p2n/P3P3/3P4/1PP2PPP/RNBQK1NR w KQkq - 1 5");
+                Board board = Board.FromFen("r1bqkb1r/pppp1ppp/2n5/1B2p2n/P3P3/3P4/1PP2PPP/RNBQK1NR w KQkq - 1 5");
                 Move[] expectedMoves =
                 {
                     new Move(Board.D1, Board.D2),
@@ -153,7 +153,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GetsAllBishopMoves()
             {
-                Board board = Board.FromFEN("rnbq1knr/1pp1bppp/p2p4/1B2p2Q/P3P2P/3P4/1PP2PP1/RNB1K1NR b KQ a3 0 6");
+                Board board = Board.FromFen("rnbq1knr/1pp1bppp/p2p4/1B2p2Q/P3P2P/3P4/1PP2PP1/RNB1K1NR b KQ a3 0 6");
                 Move[] expectedWhiteBishopMoves =
                 {
                     new Move(Board.C1, Board.D2),
@@ -370,7 +370,7 @@ namespace TyphoonTests
             public void GeneratesProperStartingPosition()
             {
                 Board b = new Board();
-                Board startingPos = Board.FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+                Board startingPos = Board.FromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
                 for (int color = 0; color < 2; color++)
                 {
@@ -388,7 +388,7 @@ namespace TyphoonTests
             [TestMethod]
             public void GeneratesBoardFromSicilainPosition()
             {
-                Board sicilian = Board.FromFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
+                Board sicilian = Board.FromFen("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
 
                 Assert.AreEqual(0x8UL, sicilian.GetPieceBitboard(Board.WHITE, Board.KING));
                 Assert.AreEqual(0x10UL, sicilian.GetPieceBitboard(Board.WHITE, Board.QUEEN));
@@ -424,7 +424,7 @@ namespace TyphoonTests
             [TestMethod]
             public void CorretlyIdentifiesPinnedPieces()
             {
-                Board board = Board.FromFEN("rnbqkbnr/2pppppp/1p6/pB5Q/4P3/8/PPPP1PPP/RNB1K1NR b KQkq - 1 3");
+                Board board = Board.FromFen("rnbqkbnr/2pppppp/1p6/pB5Q/4P3/8/PPPP1PPP/RNB1K1NR b KQkq - 1 3");
                 Assert.AreEqual(0x14000000000000UL, board.GetPinnedPiecesBitboard());
             }
         }

@@ -14,13 +14,29 @@ namespace Typhoon.Model
         public Bitboard EnPassentBitboard;
         public Move Move;
         public ulong Zobrist;
+        public int HalfMoveClock;
 
-        public BoardState(CastleRights castleRights, Bitboard enPassentBitboard, Move move, ulong zobrist)
+        public BoardState(
+            CastleRights castleRights, 
+            Bitboard enPassentBitboard,
+            Move move, 
+            ulong zobrist, 
+            int halfMoveClock)
         {
             CastleRights = castleRights;
             EnPassentBitboard = enPassentBitboard;
             Move = move;
             Zobrist = zobrist;
+            HalfMoveClock = halfMoveClock;
+        }
+
+        public BoardState(Move move, Board board)
+        {
+            CastleRights = board.CastleRights;
+            EnPassentBitboard = board.EnPassentBitboard;
+            Move = move;
+            Zobrist = board.Zobrist;
+            HalfMoveClock = board.HalfMoveClock;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Typhoon.Model
             BlackQueen = copy.BlackQueen;
         }
 
-        public static CastleRights FromFEN(string fen)
+        public static CastleRights FromFen(string fen)
         {
             bool whiteKing = fen.Contains("K");
             bool whiteQueen = fen.Contains("Q");

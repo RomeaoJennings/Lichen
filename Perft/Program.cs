@@ -46,7 +46,7 @@ namespace Perft
             {
                 var move = moves.Get(i);
                 ulong nodes = 0;
-                BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move, board.Zobrist);
+                BoardState bs = new BoardState(move, board);
                 board.DoMove(move);
                 CountNodes(board, depth - 1, ref nodes);
                 Console.WriteLine($"Move: {move}: {nodes}");
@@ -79,7 +79,7 @@ namespace Perft
                     var move = moves.Get(i);
                     if (board.IsLegalMove(move, pinned))
                     {
-                        BoardState bs = new BoardState(board.CastleRights, board.EnPassentBitboard, move, board.Zobrist);
+                        BoardState bs = new BoardState(move, board);
                         board.DoMove(move);
                         CountNodes(board, depth - 1, ref nodes);
                         board.UndoMove(bs);

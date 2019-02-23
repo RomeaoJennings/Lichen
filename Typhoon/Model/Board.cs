@@ -116,16 +116,11 @@ namespace Typhoon.Model
         public CastleRights CastleRights { get { return castleRights; } }
         public ulong Zobrist {  get { return zobristHash; } }
 
-        public int Opponent
-        {
-            get { return playerToMove == WHITE ? BLACK : WHITE; }
-        }
-
         public bool InCheck
         {
             get
             {
-                return AttackersTo(pieces[KING][playerToMove].BitScanForward(), Opponent) != 0;
+                return AttackersTo(pieces[KING][playerToMove].BitScanForward(), Opponent()) != 0;
             }
         }
 
@@ -148,6 +143,67 @@ namespace Typhoon.Model
             fullMoveNumber = copy.fullMoveNumber;
             enPassentBitboard = copy.enPassentBitboard;
             zobristHash = copy.zobristHash;
+        }
+
+        public static Board FromFen(string fen)
+        {
+            Board result = new Board
+            {
+                pieces = new Bitboard[2][]
+            };
+            result.pieces[WHITE] = new Bitboard[7];
+            result.pieces[BLACK] = new Bitboard[7];
+
+
+            const string whitePieces = "KQRBNP";
+            const string blackPieces = "kqrbnp";
+            try
+            {
+                string[] elements = fen.Split(' ');
+                string sq = elements[0].Replace("/", string.Empty);
+                int square = 63;
+                // Process squares
+                foreach (char curr in sq)
+                {
+                    // Blank Squares
+                    if (curr >= '0' && curr <= '9')
+                    {
+                        square -= int.Parse(curr.ToString());
+                        continue;
+                    }
+                    // Black Pieces
+                    else if (curr >= 'b' && curr <= 'r')
+                    {
+                        Bitboard toAdd = Bitboards.SquareBitboards[square];
+                        result.pieces[BLACK][blackPieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[BLACK][ALL_PIECES] |= toAdd;
+                    }
+                    // White Pieces
+                    else
+                    {
+                        Bitboard toAdd = Bitboards.SquareBitboards[square];
+                        result.pieces[WHITE][whitePieces.IndexOf(curr)] |= toAdd;
+                        result.pieces[WHITE][ALL_PIECES] |= toAdd;
+                    }
+                    square--;
+                }
+                result.InitPieceSquares();
+
+                result.playerToMove = elements[1] == "w" ? WHITE : BLACK;
+                result.castleRights = CastleRights.FromFen(elements[2]);
+                result.enPassentBitboard = 0;
+                if (elements[3] != "-")
+                {
+                    result.enPassentBitboard = Bitboards.SquareBitboards[Bitboards.GetSquareFromName(elements[3])];
+                }
+                result.halfMoveClock = int.Parse(elements[4]);
+                result.fullMoveNumber = int.Parse(elements[5]);
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Invalid FEN string: {fen}", e);
+            }
         }
 
         private void NewGame()
@@ -205,6 +261,12 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Opponent()
+        {
+            return playerToMove == WHITE ? BLACK : WHITE;
+        }
+
         public Bitboard GetPieceBitboard(int color, int pieceType)
         {
             return pieces[color][pieceType];
@@ -217,11 +279,12 @@ namespace Typhoon.Model
             return result;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
         {
-            int opponent = Opponent;
+            halfMoveClock++;
+
+            int opponent = Opponent();
             int originSquare = move.OriginSquare();
             int destinationSquare = move.DestinationSquare();
             int promotionType = move.PromotionType();
@@ -271,6 +334,7 @@ namespace Typhoon.Model
                 // Handle En Passent and Promotion
                 if (squares[destinationSquare] == PAWN)
                 {
+                    halfMoveClock = 0;
                     // Remove opponent's pawn when move is en passent
                     if (move.IsEnPassent())
                     {
@@ -311,6 +375,7 @@ namespace Typhoon.Model
                 // Update opponent's bitboards if piece was captured (note: EP moves do not list a capture piece)
                 if (capturePiece != EMPTY)
                 {
+                    halfMoveClock = 0;
                     pieces[opponent][capturePiece] ^= destinationSquareBitboard;
                     pieces[opponent][ALL_PIECES] ^= destinationSquareBitboard;
                     zobristHash ^= ZobristHash.PieceHashes[opponent][capturePiece][destinationSquare];
@@ -318,22 +383,33 @@ namespace Typhoon.Model
             }
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             playerToMove = opponent;
+            if (playerToMove == WHITE)
+                fullMoveNumber++;
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UndoMove(BoardState previousState)
         {
+            // Reset prior state from BoardState object
             Move move = previousState.Move;
+            enPassentBitboard = previousState.EnPassentBitboard;
+            castleRights = previousState.CastleRights;
+            zobristHash = previousState.Zobrist;
+            halfMoveClock = previousState.HalfMoveClock;
+
+            if (playerToMove == WHITE)
+            {
+                fullMoveNumber--;
+            }
+
             int originSquare = move.OriginSquare();
             int destinationSquare = move.DestinationSquare();
             int capturePiece = move.CapturePiece();
             int promotionType = move.PromotionType();
             int opponent = playerToMove;
-            playerToMove = Opponent;
-            enPassentBitboard = previousState.EnPassentBitboard;
-            castleRights = previousState.CastleRights;
-            zobristHash = previousState.Zobrist;
+            playerToMove = Opponent();
+
 
             if (move.IsCastle())
             {
@@ -389,49 +465,6 @@ namespace Typhoon.Model
                 }
             }
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GetCastleMoves(MoveList list)
-        {
-            if (playerToMove == WHITE)
-            {
-                if (castleRights.WhiteKing &&
-                    (allPiecesBitboard & 0x6UL) == 0 &&
-                    AttackersTo(E1, BLACK) == 0 &&
-                    AttackersTo(F1, BLACK) == 0 &&
-                    AttackersTo(G1, BLACK) == 0)
-                {
-                    list.Add(new Move(E1, G1, false, true, KING));
-                }
-                if (castleRights.WhiteQueen &&
-                    (allPiecesBitboard & 0x70UL) == 0 &&
-                    AttackersTo(E1, BLACK) == 0 &&
-                    AttackersTo(D1, BLACK) == 0 &&
-                    AttackersTo(C1, BLACK) == 0)
-                {
-                    list.Add(new Move(E1, C1, false, true, QUEEN));
-                }
-            }
-            else
-            {
-                if (castleRights.BlackKing &&
-                    (allPiecesBitboard & 0x600000000000000UL) == 0 &&
-                    AttackersTo(E8, WHITE) == 0 &&
-                    AttackersTo(F8, WHITE) == 0 &&
-                    AttackersTo(G8, WHITE) == 0)
-                {
-                    list.Add(new Move(E8, G8, false, true, KING));
-                }
-                if (castleRights.BlackQueen &&
-                    (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
-                    AttackersTo(E8, WHITE) == 0 &&
-                    AttackersTo(D8, WHITE) == 0 &&
-                    AttackersTo(C8, WHITE) == 0)
-                {
-                    list.Add(new Move(E8, C8, false, true, QUEEN));
-                }
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -512,78 +545,11 @@ namespace Typhoon.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetPinnedPiecesBitboard()
-        {
-            int opponent = Opponent;
-            int kingSquare = pieces[playerToMove][KING].BitScanForward();
-            Bitboard result = 0;
-            Bitboard sliders = (pieces[opponent][QUEEN] | pieces[opponent][ROOK]) &
-                (Bitboards.RowBitboards[kingSquare] | Bitboards.ColumnBitboards[kingSquare]);
-            sliders |= (pieces[opponent][QUEEN] | pieces[opponent][BISHOP]) &
-                (Bitboards.DiagonalBitboards[Bitboards.FORWARD,kingSquare] | 
-                Bitboards.DiagonalBitboards[Bitboards.BACKWARD,kingSquare]);
-            while (sliders != 0)
-            {
-                int sliderSquare = sliders.BitScanForward();
-                Bitboards.PopLsb(ref sliders);
-                Bitboard betweenBitboard = Bitboards.BetweenBitboards[kingSquare, sliderSquare] & allPiecesBitboard;
-                
-                // If exactly one piece between slider and king, it is pinned.
-                if (betweenBitboard != 0)
-                {
-                    int betweenSquare = betweenBitboard.BitScanForward();
-                    Bitboards.PopLsb(ref betweenBitboard);
-                    if (betweenBitboard == 0)
-                    {
-                        result |= Bitboards.SquareBitboards[betweenSquare];
-                    }
-                }
-            }
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsLegalMove(Move move, Bitboard pinnedPiecesBitboard)
-        {
-            int kingSquare = pieces[playerToMove][KING].BitScanForward();
-            int opponent = Opponent;
-            int originSquare = move.OriginSquare();
-            int destinationSquare = move.DestinationSquare();
-            
-            if (originSquare == kingSquare)
-            {
-                // If king move, it's legal if it is a castle move or if the destination is not attacked.
-                return move.IsCastle() || AttackersTo(destinationSquare, opponent) == 0;
-            }
-            else if (move.IsEnPassent())
-            {
-                Bitboard capSqBB = Bitboards.SquareBitboards[destinationSquare + Bitboards.EnPassentOffset[playerToMove]];
-                Bitboard occupied = allPiecesBitboard 
-                    ^ capSqBB ^ Bitboards.SquareBitboards[originSquare] 
-                    ^ Bitboards.SquareBitboards[destinationSquare];
-                return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) & 
-                    (pieces[opponent][QUEEN] | pieces[opponent][ROOK])) == 0 &&
-                       (Bitboards.GetBishopMoveBitboard(kingSquare, occupied) & 
-                       (pieces[opponent][QUEEN] | pieces[opponent][BISHOP])) == 0;
-            }
-            else
-            {
-                // Other moves are legal if the piece is not pinned, 
-                // or its moving along the ray between the king and the attacker.
-                // We assume that if we get here, we are not currently in double check,
-                // because GetEvasionMoves would only return king moves.
-                return pinnedPiecesBitboard == 0 ||
-                    (Bitboards.SquareBitboards[originSquare] & pinnedPiecesBitboard) == 0 ||
-                    Bitboards.AreAligned(kingSquare, originSquare, destinationSquare);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MoveList GetAllMoves()
         {
             MoveList result = new MoveList();
             int kingSquare = pieces[playerToMove][KING].BitScanForward();
-            Bitboard checkersBitboard = AttackersTo(kingSquare, Opponent);
+            Bitboard checkersBitboard = AttackersTo(kingSquare, Opponent());
             if (checkersBitboard != 0)
             {
                 GetEvasionMoves(result, checkersBitboard);
@@ -620,7 +586,7 @@ namespace Typhoon.Model
         {
             bool notDoubleCheck = (checkersBitboard & (checkersBitboard - 1)) == 0;
             int kingSquare = pieces[playerToMove][KING].BitScanForward();
-            int opponent = Opponent;
+            int opponent = Opponent();
 
             // Get all squares attacked by sliders and remove them as possible escape squares
             Bitboard sliders = checkersBitboard & ~(pieces[opponent][KNIGHT] | pieces[opponent][PAWN]);
@@ -718,6 +684,49 @@ namespace Typhoon.Model
             }
             attacks &= destinationBitboard;
             GenerateMovesFromBitboard(list, attacks, square);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetCastleMoves(MoveList list)
+        {
+            if (playerToMove == WHITE)
+            {
+                if (castleRights.WhiteKing &&
+                    (allPiecesBitboard & 0x6UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(F1, BLACK) == 0 &&
+                    AttackersTo(G1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, G1, false, true, KING));
+                }
+                if (castleRights.WhiteQueen &&
+                    (allPiecesBitboard & 0x70UL) == 0 &&
+                    AttackersTo(E1, BLACK) == 0 &&
+                    AttackersTo(D1, BLACK) == 0 &&
+                    AttackersTo(C1, BLACK) == 0)
+                {
+                    list.Add(new Move(E1, C1, false, true, QUEEN));
+                }
+            }
+            else
+            {
+                if (castleRights.BlackKing &&
+                    (allPiecesBitboard & 0x600000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(F8, WHITE) == 0 &&
+                    AttackersTo(G8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, G8, false, true, KING));
+                }
+                if (castleRights.BlackQueen &&
+                    (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
+                    AttackersTo(E8, WHITE) == 0 &&
+                    AttackersTo(D8, WHITE) == 0 &&
+                    AttackersTo(C8, WHITE) == 0)
+                {
+                    list.Add(new Move(E8, C8, false, true, QUEEN));
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -886,6 +895,73 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Bitboard GetPinnedPiecesBitboard()
+        {
+            int opponent = Opponent();
+            int kingSquare = pieces[playerToMove][KING].BitScanForward();
+            Bitboard result = 0;
+            Bitboard sliders = (pieces[opponent][QUEEN] | pieces[opponent][ROOK]) &
+                (Bitboards.RowBitboards[kingSquare] | Bitboards.ColumnBitboards[kingSquare]);
+            sliders |= (pieces[opponent][QUEEN] | pieces[opponent][BISHOP]) &
+                (Bitboards.DiagonalBitboards[Bitboards.FORWARD,kingSquare] | 
+                Bitboards.DiagonalBitboards[Bitboards.BACKWARD,kingSquare]);
+            while (sliders != 0)
+            {
+                int sliderSquare = sliders.BitScanForward();
+                Bitboards.PopLsb(ref sliders);
+                Bitboard betweenBitboard = Bitboards.BetweenBitboards[kingSquare, sliderSquare] & allPiecesBitboard;
+                
+                // If exactly one piece between slider and king, it is pinned.
+                if (betweenBitboard != 0)
+                {
+                    int betweenSquare = betweenBitboard.BitScanForward();
+                    Bitboards.PopLsb(ref betweenBitboard);
+                    if (betweenBitboard == 0)
+                    {
+                        result |= Bitboards.SquareBitboards[betweenSquare];
+                    }
+                }
+            }
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsLegalMove(Move move, Bitboard pinnedPiecesBitboard)
+        {
+            int kingSquare = pieces[playerToMove][KING].BitScanForward();
+            int opponent = Opponent();
+            int originSquare = move.OriginSquare();
+            int destinationSquare = move.DestinationSquare();
+            
+            if (originSquare == kingSquare)
+            {
+                // If king move, it's legal if it is a castle move or if the destination is not attacked.
+                return move.IsCastle() || AttackersTo(destinationSquare, opponent) == 0;
+            }
+            else if (move.IsEnPassent())
+            {
+                Bitboard capSqBB = Bitboards.SquareBitboards[destinationSquare + Bitboards.EnPassentOffset[playerToMove]];
+                Bitboard occupied = allPiecesBitboard 
+                    ^ capSqBB ^ Bitboards.SquareBitboards[originSquare] 
+                    ^ Bitboards.SquareBitboards[destinationSquare];
+                return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) & 
+                    (pieces[opponent][QUEEN] | pieces[opponent][ROOK])) == 0 &&
+                       (Bitboards.GetBishopMoveBitboard(kingSquare, occupied) & 
+                       (pieces[opponent][QUEEN] | pieces[opponent][BISHOP])) == 0;
+            }
+            else
+            {
+                // Other moves are legal if the piece is not pinned, 
+                // or its moving along the ray between the king and the attacker.
+                // We assume that if we get here, we are not currently in double check,
+                // because GetEvasionMoves would only return king moves.
+                return pinnedPiecesBitboard == 0 ||
+                    (Bitboards.SquareBitboards[originSquare] & pinnedPiecesBitboard) == 0 ||
+                    Bitboards.AreAligned(kingSquare, originSquare, destinationSquare);
+            }
+        }
+
         // Returns all pieces of the passed color that attack the relevent square.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard AttackersTo(int square, int color)
@@ -906,66 +982,9 @@ namespace Typhoon.Model
             return result;
         }
         
-
-        public static Board FromFEN(string fen)
+        public string ToFen()
         {
-            Board result = new Board
-            {
-                pieces = new Bitboard[2][]
-            };
-            result.pieces[WHITE] = new Bitboard[7];
-            result.pieces[BLACK] = new Bitboard[7];
-
-
-            const string whitePieces = "KQRBNP";
-            const string blackPieces = "kqrbnp";
-            try
-            {
-                string[] elements = fen.Split(' ');
-                string sq = elements[0].Replace("/", string.Empty);
-                int square = 63;
-                // Process squares
-                foreach (char curr in sq)
-                {
-                    // Blank Squares
-                    if (curr >= '0' && curr <= '9')
-                    {
-                        square -= int.Parse(curr.ToString());
-                        continue;
-                    }
-                    // Black Pieces
-                    else if (curr >= 'b' && curr <= 'r')
-                    {
-                        Bitboard toAdd = Bitboards.SquareBitboards[square];
-                        result.pieces[BLACK][blackPieces.IndexOf(curr)] |= toAdd;
-                        result.pieces[BLACK][ALL_PIECES] |= toAdd;
-                    }
-                    // White Pieces
-                    else
-                    {
-                        Bitboard toAdd = Bitboards.SquareBitboards[square];
-                        result.pieces[WHITE][whitePieces.IndexOf(curr)] |= toAdd;
-                        result.pieces[WHITE][ALL_PIECES] |= toAdd;
-                    }
-                    square--;
-                }
-                result.InitPieceSquares();
-
-                result.playerToMove = elements[1] == "w" ? WHITE : BLACK;
-                result.castleRights = CastleRights.FromFEN(elements[2]);
-                result.enPassentBitboard = 0;
-                if (elements[3] != "-")
-                {
-                    result.enPassentBitboard = Bitboards.SquareBitboards[Bitboards.GetSquareFromName(elements[3])];
-                }
-                result.halfMoveClock = int.Parse(elements[4]);
-                result.fullMoveNumber = int.Parse(elements[5]);
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw new ArgumentException($"Invalid FEN string: {fen}", e);
-            }
+            throw new NotImplementedException();
         }
     }
 }

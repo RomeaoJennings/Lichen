@@ -75,13 +75,13 @@ namespace TyphoonTests
             [TestCategory("CastleRights")]
             public void CalculatesCorrectly()
             {
-                Assert.AreEqual(CastleRights.All, CastleRights.FromFEN("KQkq"));
-                Assert.AreNotEqual(CastleRights.All, CastleRights.FromFEN("KQk"));
-                Assert.AreNotEqual(CastleRights.All, CastleRights.FromFEN("-"));
+                Assert.AreEqual(CastleRights.All, CastleRights.FromFen("KQkq"));
+                Assert.AreNotEqual(CastleRights.All, CastleRights.FromFen("KQk"));
+                Assert.AreNotEqual(CastleRights.All, CastleRights.FromFen("-"));
 
                 CastleRights cr = new CastleRights(true, false, false, false);
-                Assert.AreEqual(cr, CastleRights.FromFEN("K"));
-                Assert.AreNotEqual(cr, CastleRights.FromFEN("k"));
+                Assert.AreEqual(cr, CastleRights.FromFen("K"));
+                Assert.AreNotEqual(cr, CastleRights.FromFen("k"));
             }
         }
     }
