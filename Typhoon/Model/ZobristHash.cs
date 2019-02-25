@@ -69,21 +69,21 @@ namespace Typhoon.Model
                 // Iterate through pawns
                 for (int i = 0; i < 8; i++)
                 {
-                    hash ^= PieceHashes[Board.WHITE][Board.PAWN][i + Board.H2];
-                    hash ^= PieceHashes[Board.BLACK][Board.PAWN][i + Board.H7];
+                    hash ^= PieceHashes[Position.WHITE][Position.PAWN][i + Position.H2];
+                    hash ^= PieceHashes[Position.BLACK][Position.PAWN][i + Position.H7];
                 }
 
                 // Iterate once for each color
                 for (int color = 0; color < 2; color++)
                 {
-                    hash ^= PieceHashes[color][Board.ROOK][Board.H8 * color + Board.A1];
-                    hash ^= PieceHashes[color][Board.KNIGHT][Board.H8 * color + Board.B1];
-                    hash ^= PieceHashes[color][Board.BISHOP][Board.H8 * color + Board.C1];
-                    hash ^= PieceHashes[color][Board.QUEEN][Board.H8 * color + Board.D1];
-                    hash ^= PieceHashes[color][Board.KING][Board.H8 * color + Board.E1];
-                    hash ^= PieceHashes[color][Board.BISHOP][Board.H8 * color + Board.F1];
-                    hash ^= PieceHashes[color][Board.KNIGHT][Board.H8 * color + Board.G1];
-                    hash ^= PieceHashes[color][Board.ROOK][Board.H8 * color + Board.H1];
+                    hash ^= PieceHashes[color][Position.ROOK][Position.H8 * color + Position.A1];
+                    hash ^= PieceHashes[color][Position.KNIGHT][Position.H8 * color + Position.B1];
+                    hash ^= PieceHashes[color][Position.BISHOP][Position.H8 * color + Position.C1];
+                    hash ^= PieceHashes[color][Position.QUEEN][Position.H8 * color + Position.D1];
+                    hash ^= PieceHashes[color][Position.KING][Position.H8 * color + Position.E1];
+                    hash ^= PieceHashes[color][Position.BISHOP][Position.H8 * color + Position.F1];
+                    hash ^= PieceHashes[color][Position.KNIGHT][Position.H8 * color + Position.G1];
+                    hash ^= PieceHashes[color][Position.ROOK][Position.H8 * color + Position.H1];
                 }
 
                 return hash;

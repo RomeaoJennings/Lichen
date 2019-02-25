@@ -12,12 +12,12 @@ namespace UserInterface
     {
 
         private readonly ChessBoardView view;
-        private readonly Board model;
+        private readonly Position model;
 
         private int selectedSquare = -1;
         private readonly Stack<BoardState> previousStates = new Stack<BoardState>();
 
-        public ChessBoardController(ChessBoardView theView, Board theModel)
+        public ChessBoardController(ChessBoardView theView, Position theModel)
         {
             view = theView;
             view.SquareClicked += HandleClickedSquare;
@@ -66,7 +66,7 @@ namespace UserInterface
                     BoardState bs = new BoardState(mv, model);
                         
                     previousStates.Push(bs);
-                    if (mv.PromotionType() != Board.EMPTY)
+                    if (mv.PromotionType() != Position.EMPTY)
                     {
                         PromotionDialog pd = new PromotionDialog();
                         pd.ShowDialog();

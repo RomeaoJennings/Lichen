@@ -26,10 +26,10 @@ namespace TyphoonTests
 
         public static void TestPawnMoves(bool captureFunc, string fen, Move[] expectedMoves, int color, Bitboard destinationBitboard = 0)
         {
-            Board board = Board.FromFen(fen);
+            Position board = Position.FromFen(fen);
             MoveList actualMoves = new MoveList();
             if (destinationBitboard == 0)
-                destinationBitboard = ~board.GetPieceBitboard(color, Board.ALL_PIECES);
+                destinationBitboard = ~board.GetPieceBitboard(color, Position.ALL_PIECES);
             if (captureFunc)
                 board.GetAllPawnCaptureMoves(actualMoves, color, destinationBitboard);
             else

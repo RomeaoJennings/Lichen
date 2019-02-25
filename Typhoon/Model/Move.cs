@@ -63,7 +63,7 @@ namespace Typhoon.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Move(int origin, int destination, int capture = Board.EMPTY, int promotionType = Board.EMPTY)
+        public Move(int origin, int destination, int capture = Position.EMPTY, int promotionType = Position.EMPTY)
         {
             move = promotionType << 3;
             move |= capture;
@@ -149,7 +149,7 @@ namespace Typhoon.Model
 
             StringBuilder sb = new StringBuilder();
             sb.Append(Bitboards.GetNameFromSquare(OriginSquare()));
-            if (CapturePiece() != Board.EMPTY)
+            if (CapturePiece() != Position.EMPTY)
             {
                 sb.Append('x');
                 sb.Append(pieceStr[CapturePiece()]);
@@ -163,7 +163,7 @@ namespace Typhoon.Model
                 sb.Append('-');
             }
             sb.Append(Bitboards.GetNameFromSquare(DestinationSquare()));
-            if (PromotionType() != Board.EMPTY)
+            if (PromotionType() != Position.EMPTY)
             {
                 sb.Append('=');
                 sb.Append(pieceStr[PromotionType()]);

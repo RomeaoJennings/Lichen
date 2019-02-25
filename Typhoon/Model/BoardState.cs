@@ -30,7 +30,7 @@ namespace Typhoon.Model
             HalfMoveClock = halfMoveClock;
         }
 
-        public BoardState(Move move, Board board)
+        public BoardState(Move move, Position board)
         {
             CastleRights = board.CastleRights;
             EnPassentBitboard = board.EnPassentBitboard;

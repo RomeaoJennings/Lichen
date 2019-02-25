@@ -12,11 +12,11 @@ namespace Perft
     {
         static void Main(string[] args)
         {
-            Board board = new Board();
+            Position board = new Position();
             Perft(board, 7);
         }
 
-        static void Perft(Board board, int depth)
+        static void Perft(Position board, int depth)
         {
             Debug.Assert(depth >= 1);
             Stopwatch sw = new Stopwatch();
@@ -60,7 +60,7 @@ namespace Perft
             Console.WriteLine($"Nodes Per Second: {(total / (ulong)sw.ElapsedMilliseconds) * 1000  }");
         }
 
-        static void CountNodes(Board board, int depth, ref ulong nodes)
+        static void CountNodes(Position board, int depth, ref ulong nodes)
         {
             ulong pinned = board.GetPinnedPiecesBitboard();
             var moves = board.GetAllMoves();

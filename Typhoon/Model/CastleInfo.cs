@@ -28,10 +28,10 @@ namespace Typhoon.Model
             KingBitboard = Bitboards.SquareBitboards[kingOrigin] | Bitboards.SquareBitboards[kingDestination];
             RookBitboard = Bitboards.SquareBitboards[rookOrigin] | Bitboards.SquareBitboards[rookDestination];
 
-            Zobrist = ZobristHash.PieceHashes[color][Board.KING][kingOrigin] ^
-                ZobristHash.PieceHashes[color][Board.KING][kingDestination] ^
-                ZobristHash.PieceHashes[color][Board.ROOK][rookOrigin] ^
-                ZobristHash.PieceHashes[color][Board.ROOK][rookDestination];
+            Zobrist = ZobristHash.PieceHashes[color][Position.KING][kingOrigin] ^
+                ZobristHash.PieceHashes[color][Position.KING][kingDestination] ^
+                ZobristHash.PieceHashes[color][Position.ROOK][rookOrigin] ^
+                ZobristHash.PieceHashes[color][Position.ROOK][rookDestination];
         }
     }
 }

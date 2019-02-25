@@ -8,7 +8,7 @@ namespace Typhoon.Model
 {
     using Bitboard = UInt64;
 
-    public class Board
+    public class Position
     {
         public const int WHITE = 0;
         public const int BLACK = 1;
@@ -125,12 +125,12 @@ namespace Typhoon.Model
             }
         }
 
-        public Board()
+        public Position()
         {
             NewGame();
         }
 
-        public Board(Board copy)
+        public Position(Position copy)
         {
             this.pieces = new Bitboard[2][];
             pieces[0] = new Bitboard[7];
@@ -146,9 +146,9 @@ namespace Typhoon.Model
             zobristHash = copy.zobristHash;
         }
 
-        public static Board FromFen(string fen)
+        public static Position FromFen(string fen)
         {
-            Board result = new Board
+            Position result = new Position
             {
                 pieces = new Bitboard[2][]
             };

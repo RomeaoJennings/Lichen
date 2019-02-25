@@ -342,12 +342,12 @@ namespace Typhoon.Model
 
             for (int i = 0; i < 64; i++)
             {
-                if (i < Board.H8)
+                if (i < Position.H8)
                 {
                     result[WHITE, i] = GenerateBitboardFromOffsets(i, 1, offsets[WHITE]);
                 }
 
-                if (i > Board.A1)
+                if (i > Position.A1)
                 {
                     result[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
                 }
@@ -374,14 +374,14 @@ namespace Typhoon.Model
             CastleInfo[][] result = new CastleInfo[2][];
             result[WHITE] = new CastleInfo[]
             {
-                new CastleInfo(Board.E1, Board.G1, Board.H1, Board.F1, WHITE),
-                new CastleInfo(Board.E1, Board.C1, Board.A1, Board.D1, WHITE)
+                new CastleInfo(Position.E1, Position.G1, Position.H1, Position.F1, WHITE),
+                new CastleInfo(Position.E1, Position.C1, Position.A1, Position.D1, WHITE)
             };
 
             result[BLACK] = new CastleInfo[]
             {
-                new CastleInfo(Board.E8, Board.G8, Board.H8, Board.F8, BLACK),
-                new CastleInfo(Board.E8, Board.C8, Board.A8, Board.D8, BLACK)
+                new CastleInfo(Position.E8, Position.G8, Position.H8, Position.F8, BLACK),
+                new CastleInfo(Position.E8, Position.C8, Position.A8, Position.D8, BLACK)
             };
             return result;
         }
