@@ -49,5 +49,11 @@ namespace TyphoonTests
             return StripMoveNumsFromFen(fen1) == StripMoveNumsFromFen(fen2);
         }
 
+        public static ulong NextULong(this Random random)
+        {
+            uint upper = (uint)random.Next();
+            uint lower = (uint)random.Next();
+            return ((ulong)upper) << 32 | lower;
+        }
     }
 }

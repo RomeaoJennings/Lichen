@@ -72,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MagicBitboardFactoryTests.cs" />
     <Compile Include="CastleRightsTests.cs" />
+    <Compile Include="RepetitionTableTests.cs" />
     <Compile Include="TestUtils.cs" />
     <Compile Include="BoardTests.cs" />
   </ItemGroup>
