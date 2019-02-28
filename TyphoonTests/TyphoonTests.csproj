@@ -75,6 +75,8 @@
     <Compile Include="RepetitionTableTests.cs" />
     <Compile Include="TestUtils.cs" />
     <Compile Include="BoardTests.cs" />
+    <Compile Include="EvaluateTests.cs" />
+    <Compile Include="SearchTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Typhoon\Typhoon.csproj">

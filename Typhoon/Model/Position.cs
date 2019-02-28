@@ -116,6 +116,7 @@ namespace Typhoon.Model
         public Bitboard EnPassentBitboard { get { return enPassentBitboard; } }
         public CastleRights CastleRights { get { return castleRights; } }
         public ulong Zobrist {  get { return zobristHash; } }
+        public Bitboard AllPiecesBitboard { get { return allPiecesBitboard; } }
 
         public bool InCheck
         {
@@ -269,9 +270,16 @@ namespace Typhoon.Model
             return playerToMove == WHITE ? BLACK : WHITE;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetPieceBitboard(int color, int pieceType)
         {
             return pieces[color][pieceType];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Bitboard GetCheckersBitboard()
+        {
+            return AttackersTo(pieces[playerToMove][KING].BitScanForward(), Opponent());
         }
 
         public int[] GetPieceSquares()
@@ -675,15 +683,14 @@ namespace Typhoon.Model
             int square,
             Bitboard destinationBitboard)
         {
-            Bitboard allPieces = allPiecesBitboard;
             Bitboard attacks = 0;
             if (pieceType == ROOK || pieceType == QUEEN)
             {
-                attacks = Bitboards.GetRookMoveBitboard(square, allPieces);
+                attacks = Bitboards.GetRookMoveBitboard(square, allPiecesBitboard);
             }
             if (pieceType == BISHOP || pieceType == QUEEN)
             {
-                attacks |= Bitboards.GetBishopMoveBitboard(square, allPieces);
+                attacks |= Bitboards.GetBishopMoveBitboard(square, allPiecesBitboard);
             }
             attacks &= destinationBitboard;
             GenerateMovesFromBitboard(list, attacks, square);
