@@ -488,5 +488,25 @@ namespace TyphoonTests
                 }
             }
         }
+
+        [TestClass]
+        public class See
+        {
+            [TestMethod]
+            public void RookTakesE5()
+            {
+                Position position = Position.FromFen("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 0");
+
+                Assert.AreEqual(100, position.See(new Move(Position.E1, Position.E5, Position.PAWN)));
+            }
+
+            [TestMethod]
+            public void KnightTakese5()
+            {
+                Position position = Position.FromFen("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 0");
+                Assert.AreEqual(-225, position.See(new Move(Position.D3, Position.E5, Position.PAWN)));
+            }
+        
+        }
     }
 }

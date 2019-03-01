@@ -59,7 +59,7 @@ namespace Typhoon.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CastleDirection()
         {
-            return move & CASTLE_DIR_MASK;
+            return (move & CASTLE_DIR_MASK) == 0 ? 0 : 1; // TODO: Switch to SHIFT
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

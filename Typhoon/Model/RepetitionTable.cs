@@ -10,119 +10,52 @@ namespace Typhoon.Model
 {
     public class RepetitionTable
     {
-        private Node[] table;
-        private readonly int capacity;
-        private readonly int shift;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RepetitionTable()
-        {
-            capacity = (int)Math.Pow(2, 10);
-            shift = 64 - 10;
-            table = new Node[capacity];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Clear()
-        {
-            table = new Node[capacity];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private readonly Dictionary<ulong, byte> dictionary = new Dictionary<ulong, byte>(100000);
+        private long cntr = 0;
         public int AddPosition(ulong key)
         {
-            int index = (int)(key >> shift);
-            if (table[index] == null)
+         //   Debug.Write($"Adding Position: {key} - Count: ");
+            cntr++;
+            byte value;
+            if (dictionary.TryGetValue(key, out value))
             {
-                table[index] = new Node(key);
-                return 1;
+                value++;
+                dictionary[key] = value;
+                //Debug.WriteLine($"{value} - Total Nodes: {cntr}");
+                return value;
             }
             else
             {
-                Node curr = table[index];
-                if (curr.Key == key)
-                    return ++curr.Count;
-                while (curr.Next != null)
-                {
-                    if (curr.Next.Key == key)
-                    {
-                        return ++curr.Next.Count;
-                    }
-                    curr = curr.Next;
-                }
-                curr.Next = new Node(key);
+                dictionary[key] = 1;
+                //Debug.WriteLine($"1 - Total Nodes: {cntr}");
                 return 1;
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RemovePosition(ulong key)
-        {
-            int index = (int)(key >> shift);
-            Node curr = table[index];
-            if (curr == null)
-                return;
-            else if (curr.Key == key)
-            {
-                if (curr.Count > 1)
-                {
-                    curr.Count--;
-                    return;
-                }
-                else
-                {
-                    table[index] = curr.Next;
-                    return;
-                }
-            }
-            Node next = curr.Next;
-            while (next != null)
-            {
-                if (next.Key == key)
-                {
-                    if (next.Count > 1)
-                    {
-                        next.Count--;
-                        return;
-                    }
-                    else
-                    {
-                        curr.Next = next.Next;
-                        return;
-                    }
-                }
-                curr = curr.Next;
-                next = next.Next;   
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetCount(ulong key)
         {
-            int index = (int)(key >> shift);
-            Node curr = table[index];
-            while (curr != null)
-            {
-                if (curr.Key == key)
-                    return curr.Count;
-                curr = curr.Next;
-            }
-            return 0;
+            byte value = 0;
+            dictionary.TryGetValue(key, out value);
+            return value;
         }
 
-        private class Node
+        public void Clear()
         {
-            public ulong Key;
-            public Node Next;
-            public int Count;
+            dictionary.Clear();
+        }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Node(ulong key)
+        public void RemovePosition(ulong key)
+        {
+            byte value = 0;
+            cntr--;
+            if (dictionary.TryGetValue(key, out value))
             {
-                Key = key;
-                Count = 1;
+                if (value == 1)
+                    dictionary.Remove(key);
+                else
+                    dictionary[key] = --value;
             }
-
+           // Debug.WriteLine($"Removing Key: {key} - Count: {value} - TOTAL: {cntr}");
         }
     }
 }

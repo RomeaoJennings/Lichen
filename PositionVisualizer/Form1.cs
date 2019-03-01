@@ -1,20 +1,28 @@
 ﻿using System.Windows.Forms;
 using Typhoon.Model;
+using Typhoon.Search;
 
 namespace UserInterface
 {
     public partial class Form1 : Form
     {
         ChessBoardController cbc;
+        Position position = new Position();
         public Form1()
         {
             InitializeComponent();
-            cbc = new ChessBoardController(boardView, Position.FromFen("8/8/3p4/1Pp3kr/RK3p2/8/4P1P1/8 w - c6 0 3"));
+            cbc = new ChessBoardController(boardView, position);
         }
 
         private void btnUndo_Click(object sender, System.EventArgs e)
         {
             cbc.UndoMove();
+        }
+
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            Search search = new Search();
+            MessageBox.Show(search.IterativeDeepening((int)numericUpDown1.Value, position).ToString());
         }
     }
 }

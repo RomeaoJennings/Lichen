@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -25,32 +26,36 @@ namespace Typhoon.Search
             // King mobility
             int whiteKingSquare = Bitboards.BitScanForward(position.GetPieceBitboard(Position.WHITE, Position.KING));
             int blackKingSquare = Bitboards.BitScanForward(position.GetPieceBitboard(Position.BLACK, Position.KING));
-            score += Bitboards.CountBits(notWhite & Bitboards.KingBitboards[whiteKingSquare]);
-            score -= Bitboards.CountBits(notBlack & Bitboards.KingBitboards[blackKingSquare]);
+            int whiteKing = Bitboards.CountBits(notWhite & Bitboards.KingBitboards[whiteKingSquare]);
+            int blackKing = Bitboards.CountBits(notBlack & Bitboards.KingBitboards[blackKingSquare]);
 
             // Queen evalution
-            score += EvaluateSlidingPiece(position, Position.WHITE, Position.QUEEN, 900, 1, ref notWhite);
-            score -= EvaluateSlidingPiece(position, Position.BLACK, Position.QUEEN, 900, 1, ref notBlack);
+            int whiteQueen = EvaluateSlidingPiece(position, Position.WHITE, Position.QUEEN, 900, 1, ref notWhite);
+            int blackQueen = EvaluateSlidingPiece(position, Position.BLACK, Position.QUEEN, 900, 1, ref notBlack);
 
             // Rook Evaluation
-            score += EvaluateSlidingPiece(position, Position.WHITE, Position.ROOK, 500, 1, ref notWhite);
-            score -= EvaluateSlidingPiece(position, Position.BLACK, Position.ROOK, 500, 1, ref notBlack);
+            int whiteRook = EvaluateSlidingPiece(position, Position.WHITE, Position.ROOK, 500, 1, ref notWhite);
+            int blackRook = EvaluateSlidingPiece(position, Position.BLACK, Position.ROOK, 500, 1, ref notBlack);
 
             // Bishop Evaluation
-            score += EvaluateSlidingPiece(position, Position.WHITE, Position.BISHOP, 325, 2, ref notWhite);
-            score -= EvaluateSlidingPiece(position, Position.BLACK, Position.BISHOP, 325, 2, ref notBlack);
+            int whiteBishop = EvaluateSlidingPiece(position, Position.WHITE, Position.BISHOP, 325, 1, ref notWhite);
+            int blackBishop = EvaluateSlidingPiece(position, Position.BLACK, Position.BISHOP, 325, 1, ref notBlack);
 
             // Knight Evaluation
-            score += EvaluateKnights(position, Position.WHITE, 2, ref notWhite);
-            score -= EvaluateKnights(position, Position.BLACK, 2, ref notBlack);
+            int whiteKnight = EvaluateKnights(position, Position.WHITE, 1, ref notWhite);
+            int blackKnight = EvaluateKnights(position, Position.BLACK, 1, ref notBlack);
 
             // For now, do not include pawn mobility
-            score += 100 * Bitboards.CountBits(position.GetPieceBitboard(Position.WHITE, Position.PAWN));
-            score -= 100 * Bitboards.CountBits(position.GetPieceBitboard(Position.BLACK, Position.PAWN));
+            int whitePawn = 100 * Bitboards.CountBits(position.GetPieceBitboard(Position.WHITE, Position.PAWN));
+            int blackPawn = 100 * Bitboards.CountBits(position.GetPieceBitboard(Position.BLACK, Position.PAWN));
 
-            if (position.PlayerToMove == Position.WHITE)
-                return score;
-            else return 0 - score;
+            
+            score = whitePawn + whiteKnight + whiteBishop + whiteRook + whiteQueen + whiteKing;
+            score -= (blackPawn + blackKnight + blackBishop + blackRook + blackQueen + blackKing);
+            if (position.PlayerToMove == Position.BLACK)
+                score *= -1;
+            
+            return score;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,6 +93,7 @@ namespace Typhoon.Search
                 {
                     attacks |= Bitboards.GetBishopMoveBitboard(square, position.AllPiecesBitboard);
                 }
+                attacks &= destinationBitboard;
                 score += Bitboards.CountBits(attacks) * mobilityMultiplier;
             }
             return score;

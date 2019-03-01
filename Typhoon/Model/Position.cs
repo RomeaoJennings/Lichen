@@ -581,7 +581,10 @@ namespace Typhoon.Model
             if (moveType != MoveType.Evasions)
             {
                 GetAllStepPieceMoves(list, KING, playerToMove, destinationBitboard);
-                GetCastleMoves(list);
+                if (moveType != MoveType.Captures)
+                {
+                    GetCastleMoves(list);
+                }
             }
 
             GetAllSlidingPieceMoves(list, QUEEN, playerToMove, destinationBitboard);
@@ -677,11 +680,7 @@ namespace Typhoon.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GetSlidingPieceMoves(
-            MoveList list,
-            int pieceType,
-            int square,
-            Bitboard destinationBitboard)
+        public Bitboard GetSlidingPieceBitboard(int square, int pieceType)
         {
             Bitboard attacks = 0;
             if (pieceType == ROOK || pieceType == QUEEN)
@@ -692,7 +691,18 @@ namespace Typhoon.Model
             {
                 attacks |= Bitboards.GetBishopMoveBitboard(square, allPiecesBitboard);
             }
-            attacks &= destinationBitboard;
+            return attacks;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetSlidingPieceMoves(
+            MoveList list,
+            int pieceType,
+            int square,
+            Bitboard destinationBitboard)
+        {
+            
+            Bitboard attacks = GetSlidingPieceBitboard(square,pieceType) & destinationBitboard;
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
@@ -991,7 +1001,66 @@ namespace Typhoon.Model
             result |= (Bitboards.PawnBitboards[opponent, square] & pieces[color][PAWN]);
             return result;
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int See(Move move)
+        {
+            int[] pieceValues = { 10000, 900, 500, 350, 325, 100 };
+            int[] gain = new int[32];
+            int depth = 0;
+            Bitboard occupied = allPiecesBitboard;
+            Bitboard mayXray = occupied ^ pieces[WHITE][KING] ^ pieces[WHITE][KNIGHT] ^ pieces[BLACK][KING] ^ pieces[BLACK][KNIGHT];
+            int originSquare = move.OriginSquare();
+            int destinationSquare = move.DestinationSquare();
+            Bitboard originBitboard = Bitboards.SquareBitboards[originSquare];
+            int attkPiece = squares[originSquare];
+            int target = squares[destinationSquare];
+            Bitboard attacks = AttackersTo(destinationSquare, WHITE) | AttackersTo(destinationSquare, BLACK);
+            gain[depth] = pieceValues[target];
+            int side = playerToMove;
+            do
+            {
+                gain[++depth] = pieceValues[attkPiece] - gain[depth - 1];
+                if (Math.Max(-gain[depth - 1], gain[depth]) < 0)
+                    break;
+                attacks ^= originBitboard;
+                occupied ^= originBitboard;
+                if ((originBitboard & mayXray) != 0)
+                    attacks |= (GetAllSliderAttackersToBB(destinationSquare, WHITE, occupied) | GetAllSliderAttackersToBB(destinationSquare, BLACK, occupied)) & occupied;
+                side = side == WHITE ? BLACK : WHITE;
+                originBitboard = GetLeastValuablePiece(ref attacks, ref side, ref attkPiece);
+            } while (originBitboard != 0);
+
+            while (--depth != 0)
+                gain[depth - 1] = -Math.Max(-gain[depth - 1], gain[depth]);
+            return gain[0];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Bitboard GetAllSliderAttackersToBB(int square, int color, Bitboard occupiedBB)
+        {
+            Debug.Assert(square >= 0 && square < 64);
+            Debug.Assert(color == WHITE || color == BLACK);
+
+            Bitboard bb = GetSlidingPieceBitboard(square, ROOK) & (pieces[color][QUEEN] | pieces[color][ROOK]) |
+                          GetSlidingPieceBitboard(square, BISHOP) & (pieces[color][QUEEN] | pieces[color][BISHOP]);
+
+            return bb;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Bitboard GetLeastValuablePiece(ref Bitboard attacks, ref int color, ref int piece)
+        {
+            for (piece = PAWN; piece >= KING; piece--)
+            {
+                Bitboard subset = attacks & pieces[color][piece];
+                if (subset != 0)
+                    return (ulong)((long)subset & -(long)subset);
+            }
+            return 0;
+        }
+
         public string ToFen()
         {
             StringBuilder sb = new StringBuilder();
