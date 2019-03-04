@@ -22,10 +22,12 @@ namespace Typhoon.Search
         private int currNodes;
         private int currQNodes;
 
-        private PvNode[] principalVariations; // An array of principal variations at each ply of the ID framework.
+        // An array of principal variations at each ply of the ID framework.
+        private PvNode[] principalVariations;
 
         public Move IterativeDeepening(int maxPly, Position position)
         {
+            Stopwatch sw = new Stopwatch();
             principalVariations = new PvNode[maxPly];
             nodes = new int[maxPly];
             qnodes = new int[maxPly];
@@ -38,10 +40,11 @@ namespace Typhoon.Search
             PvNode bestNode = new PvNode();
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
 
-            for (int depth = 0; depth < maxPly; depth++) {
+            for (int depth = 0; depth < maxPly; depth++)
+            {
 
-            int alpha = INITIAL_ALPHA;
-            int beta = INITIAL_BETA;
+                int alpha = INITIAL_ALPHA;
+                int beta = INITIAL_BETA;
                 bool isPvLine = true;
                 currNodes = 0;
                 currQNodes = 0;
@@ -52,13 +55,20 @@ namespace Typhoon.Search
                         moves.SwapPvNode(bestNode.Move);
                     }
                     Move move = moves.Get(i);
-                    
+
                     if (position.IsLegalMove(move, pinnedPiecesBitboard))
                     {
                         BoardState previousState = new BoardState(move, position);
                         position.DoMove(move);
                         PvNode node = new PvNode(move);
-                        score = -AlphaBeta(position, -beta, -alpha, depth, isPvLine, node, bestNode.Next);
+                        score = -AlphaBeta(
+                            position,
+                            -beta,
+                            -alpha,
+                            depth,
+                            isPvLine,
+                            node,
+                            bestNode.Next);
                         position.UndoMove(previousState);
                         isPvLine = false;
                         if (score > alpha)
@@ -89,8 +99,16 @@ namespace Typhoon.Search
             return bestMove;
         }
 
-        public int AlphaBeta(Position position, int alpha, int beta, int depth, bool isPvLine, PvNode pvNode, PvNode lastPv)
+        public int AlphaBeta(
+            Position position,
+            int alpha,
+            int beta,
+            int depth,
+            bool isPvLine,
+            PvNode pvNode,
+            PvNode lastPv)
         {
+
             if (depth == 0)
             {
                 currNodes++;
@@ -101,8 +119,6 @@ namespace Typhoon.Search
             {
                 return 0;
             }
-
-            
 
             bool noMoves = true;
 
@@ -122,9 +138,9 @@ namespace Typhoon.Search
                     PvNode node = new PvNode(move);
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
-         
-                    int score = -AlphaBeta(position, -beta, -alpha, depth - 1,isPvLine, node, lastPv?.Next);
-                 
+
+                    int score = -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
+
                     position.UndoMove(previousState);
                     isPvLine = false;
                     if (score > alpha)
@@ -189,9 +205,9 @@ namespace Typhoon.Search
                         continue;
                     noMoves = false;
                     BoardState previousState = new BoardState(move, position);
-                    
+
                     position.DoMove(move);
-                    int score = -Quiesce(position, -beta, -alpha, depth-1);
+                    int score = -Quiesce(position, -beta, -alpha, depth - 1);
                     position.UndoMove(previousState);
                     if (score > alpha)
                     {

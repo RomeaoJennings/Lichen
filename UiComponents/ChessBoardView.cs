@@ -158,10 +158,16 @@ namespace UiComponents
                 if (squares[i] != EMPTY)
                 {
                     int square = squares[i];
-                    string pieceMask = fontMapping[square].ToString();
+                    string pieceMask;
+
+                    // First draw the opposite colored piece in white, to remove background in transparent locations.
                     if (square < 6)
                     {
                         pieceMask = fontMapping[square + 6].ToString();
+                    }
+                    else
+                    {
+                        pieceMask = fontMapping[square - 6].ToString();
                     }
                     string piece = fontMapping[square].ToString();
 
