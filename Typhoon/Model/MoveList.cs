@@ -27,6 +27,20 @@ namespace Typhoon.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SwapPvNode(Move pvMove)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (moves[i] == pvMove)
+                {
+                    moves[i] = moves[0];
+                    moves[0] = pvMove;
+                    return;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(Move move)
         {
             if (Count == moves.Length)

@@ -10,24 +10,21 @@ namespace Typhoon.Model
 {
     public class RepetitionTable
     {
-        private readonly Dictionary<ulong, byte> dictionary = new Dictionary<ulong, byte>(100000);
+        private readonly Dictionary<ulong, byte> dictionary = new Dictionary<ulong, byte>(2056);
         private long cntr = 0;
         public int AddPosition(ulong key)
         {
-         //   Debug.Write($"Adding Position: {key} - Count: ");
             cntr++;
             byte value;
             if (dictionary.TryGetValue(key, out value))
             {
                 value++;
                 dictionary[key] = value;
-                //Debug.WriteLine($"{value} - Total Nodes: {cntr}");
                 return value;
             }
             else
             {
                 dictionary[key] = 1;
-                //Debug.WriteLine($"1 - Total Nodes: {cntr}");
                 return 1;
             }
         }
@@ -55,7 +52,6 @@ namespace Typhoon.Model
                 else
                     dictionary[key] = --value;
             }
-           // Debug.WriteLine($"Removing Key: {key} - Count: {value} - TOTAL: {cntr}");
         }
     }
 }

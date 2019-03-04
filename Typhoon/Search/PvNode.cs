@@ -23,5 +23,11 @@ namespace Typhoon.Search
             Move = move;
             Next = null;
         }
+
+        public PvNode()
+        {
+            Move = new Move();
+            Next = null;
+        }
     }
 }

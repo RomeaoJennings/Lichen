@@ -34,16 +34,16 @@ namespace Typhoon.Search
             int blackQueen = EvaluateSlidingPiece(position, Position.BLACK, Position.QUEEN, 900, 1, ref notBlack);
 
             // Rook Evaluation
-            int whiteRook = EvaluateSlidingPiece(position, Position.WHITE, Position.ROOK, 500, 1, ref notWhite);
-            int blackRook = EvaluateSlidingPiece(position, Position.BLACK, Position.ROOK, 500, 1, ref notBlack);
+            int whiteRook = EvaluateSlidingPiece(position, Position.WHITE, Position.ROOK, 500, 3, ref notWhite);
+            int blackRook = EvaluateSlidingPiece(position, Position.BLACK, Position.ROOK, 500, 3, ref notBlack);
 
             // Bishop Evaluation
-            int whiteBishop = EvaluateSlidingPiece(position, Position.WHITE, Position.BISHOP, 325, 1, ref notWhite);
-            int blackBishop = EvaluateSlidingPiece(position, Position.BLACK, Position.BISHOP, 325, 1, ref notBlack);
+            int whiteBishop = EvaluateSlidingPiece(position, Position.WHITE, Position.BISHOP, 325, 8, ref notWhite);
+            int blackBishop = EvaluateSlidingPiece(position, Position.BLACK, Position.BISHOP, 325, 8, ref notBlack);
 
             // Knight Evaluation
-            int whiteKnight = EvaluateKnights(position, Position.WHITE, 1, ref notWhite);
-            int blackKnight = EvaluateKnights(position, Position.BLACK, 1, ref notBlack);
+            int whiteKnight = EvaluateKnights(position, Position.WHITE, 8, ref notWhite);
+            int blackKnight = EvaluateKnights(position, Position.BLACK, 8, ref notBlack);
 
             // For now, do not include pawn mobility
             int whitePawn = 100 * Bitboards.CountBits(position.GetPieceBitboard(Position.WHITE, Position.PAWN));

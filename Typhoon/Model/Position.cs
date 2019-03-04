@@ -99,7 +99,7 @@ namespace Typhoon.Model
 
         #endregion
 
-
+        private RepetitionTable threeMoveRepetition;
         private Bitboard[][] pieces;
         private int[] squares;
         private Bitboard enPassentBitboard;
@@ -145,6 +145,7 @@ namespace Typhoon.Model
             fullMoveNumber = copy.fullMoveNumber;
             enPassentBitboard = copy.enPassentBitboard;
             zobristHash = copy.zobristHash;
+            // Todo: Copy repetition table.
         }
 
         public static Position FromFen(string fen)
@@ -198,9 +199,17 @@ namespace Typhoon.Model
                 {
                     result.enPassentBitboard = Bitboards.SquareBitboards[Bitboards.GetSquareFromName(elements[3])];
                 }
-                result.halfMoveClock = int.Parse(elements[4]);
-                result.fullMoveNumber = int.Parse(elements[5]);
+                if (elements.Length > 4)
+                {
+                    result.halfMoveClock = int.Parse(elements[4]);
+                }
+                if (elements.Length > 5)
+                {
+                    result.fullMoveNumber = int.Parse(elements[5]);
+                }
                 result.allPiecesBitboard = result.pieces[WHITE][ALL_PIECES] | result.pieces[BLACK][ALL_PIECES];
+                result.threeMoveRepetition = new RepetitionTable();
+                result.threeMoveRepetition.AddPosition(result.zobristHash);
                 return result;
             }
             catch (Exception e)
@@ -217,6 +226,8 @@ namespace Typhoon.Model
             halfMoveClock = 0;
             enPassentBitboard = 0;
             zobristHash = ZobristHash.NewGameHash;
+            threeMoveRepetition = new RepetitionTable();
+            threeMoveRepetition.AddPosition(zobristHash);
 
             pieces = new Bitboard[2][];
             pieces[WHITE] = new Bitboard[7];
@@ -274,6 +285,12 @@ namespace Typhoon.Model
         public Bitboard GetPieceBitboard(int color, int pieceType)
         {
             return pieces[color][pieceType];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool PositionIsThreefoldDraw()
+        {
+            return threeMoveRepetition.GetCount(zobristHash) > 2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -394,6 +411,7 @@ namespace Typhoon.Model
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             playerToMove = opponent;
             zobristHash ^= ZobristHash.WhiteToMoveHash;
+            threeMoveRepetition.AddPosition(zobristHash);
             if (playerToMove == WHITE)
                 fullMoveNumber++;
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
@@ -402,6 +420,7 @@ namespace Typhoon.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UndoMove(BoardState previousState)
         {
+            threeMoveRepetition.RemovePosition(zobristHash);
             // Reset prior state from BoardState object
             Move move = previousState.Move;
             enPassentBitboard = previousState.EnPassentBitboard;
@@ -475,6 +494,7 @@ namespace Typhoon.Model
                     squares[originSquare] = PAWN;
                 }
             }
+            
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
@@ -576,6 +596,13 @@ namespace Typhoon.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void GetMoves(MoveType moveType, MoveList list, Bitboard destinationBitboard)
         {
+            GetAllPawnCaptureMoves(list, playerToMove, destinationBitboard);
+            GetAllStepPieceMoves(list, KNIGHT, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(list, BISHOP, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(list, ROOK, playerToMove, destinationBitboard);
+            GetAllSlidingPieceMoves(list, QUEEN, playerToMove, destinationBitboard);
+            GetAllPawnPushMoves(list, playerToMove, destinationBitboard);  
+
             // No need to get King moves for evasions, because they are 
             // already generated before call to GetMoves
             if (moveType != MoveType.Evasions)
@@ -586,13 +613,6 @@ namespace Typhoon.Model
                     GetCastleMoves(list);
                 }
             }
-
-            GetAllSlidingPieceMoves(list, QUEEN, playerToMove, destinationBitboard);
-            GetAllSlidingPieceMoves(list, ROOK, playerToMove, destinationBitboard);
-            GetAllSlidingPieceMoves(list, BISHOP, playerToMove, destinationBitboard);
-            GetAllStepPieceMoves(list, KNIGHT, playerToMove, destinationBitboard);
-            GetAllPawnPushMoves(list, playerToMove, destinationBitboard);  
-            GetAllPawnCaptureMoves(list, playerToMove, destinationBitboard);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

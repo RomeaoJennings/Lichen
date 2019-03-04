@@ -12,24 +12,45 @@ namespace Typhoon.Search
 
     public class Search
     {
+        public const int INITIAL_ALPHA = -10000000;
+        public const int INITIAL_BETA = 10000000;
+        public const int CHECKMATE = -50000;
+
+        private int[] nodes;
+        private int[] qnodes;
+
+        private int currNodes;
+        private int currQNodes;
+
+        private PvNode[] principalVariations; // An array of principal variations at each ply of the ID framework.
+
         public Move IterativeDeepening(int maxPly, Position position)
         {
-            RepetitionTable repetitionTable = new RepetitionTable();
+            principalVariations = new PvNode[maxPly];
+            nodes = new int[maxPly];
+            qnodes = new int[maxPly];
 
             MoveList moves = position.GetAllMoves();
 
             int moveCount = moves.Count;
-
-            int alpha = -1000000;
-            int beta = 10000000;
             int score;
             Move bestMove = new Move();
-            PvNode bestNode = null;
+            PvNode bestNode = new PvNode();
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
 
-            for (int depth = maxPly-1; depth < maxPly; depth++) {
+            for (int depth = 0; depth < maxPly; depth++) {
+
+            int alpha = INITIAL_ALPHA;
+            int beta = INITIAL_BETA;
+                bool isPvLine = true;
+                currNodes = 0;
+                currQNodes = 0;
                 for (int i = 0; i < moveCount; i++)
                 {
+                    if (isPvLine)
+                    {
+                        moves.SwapPvNode(bestNode.Move);
+                    }
                     Move move = moves.Get(i);
                     
                     if (position.IsLegalMove(move, pinnedPiecesBitboard))
@@ -37,45 +58,47 @@ namespace Typhoon.Search
                         BoardState previousState = new BoardState(move, position);
                         position.DoMove(move);
                         PvNode node = new PvNode(move);
-                        score = -AlphaBeta(position, -beta, -alpha, depth, repetitionTable, node);
+                        score = -AlphaBeta(position, -beta, -alpha, depth, isPvLine, node, bestNode.Next);
                         position.UndoMove(previousState);
-
+                        isPvLine = false;
                         if (score > alpha)
                         {
                             bestMove = move;
                             bestNode = node;
                             alpha = score;
                         }
-                        if (beta <= alpha)
-                        {
-                            break;
-                        }
                     }
                 }
+                principalVariations[depth] = bestNode;
+                nodes[depth] = currNodes;
+                qnodes[depth] = currQNodes - currNodes;
             }
+            for (int i = 0; i < maxPly; i++)
+            {
+                Debug.WriteLine($"Ply {i + 1}: Nodes: {nodes[i]} Q-Nodes: {qnodes[i]}");
+            }
+
             StringBuilder sb = new StringBuilder();
             while (bestNode != null)
             {
                 sb.Append(bestNode.Move);
-                sb.Append("\r\n");
+                sb.Append(" ");
                 bestNode = bestNode.Next;
             }
-            Debug.Write(sb.ToString());
+            Debug.WriteLine(sb.ToString());
             return bestMove;
         }
 
-        public int AlphaBeta(Position position, int alpha, int beta, int depth, RepetitionTable repetitionTable, PvNode pvNode)
+        public int AlphaBeta(Position position, int alpha, int beta, int depth, bool isPvLine, PvNode pvNode, PvNode lastPv)
         {
-            ulong zobrist = position.Zobrist;
             if (depth == 0)
             {
-                return Quiesce(position, alpha, beta, depth, repetitionTable);
+                currNodes++;
+                return Quiesce(position, alpha, beta, depth);
             }
 
-            // Check for 3-repetition draw
-            if (repetitionTable.AddPosition(zobrist) >= 3)
+            if (position.PositionIsThreefoldDraw())
             {
-                repetitionTable.RemovePosition(position.Zobrist);
                 return 0;
             }
 
@@ -86,6 +109,10 @@ namespace Typhoon.Search
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
+            if (isPvLine && lastPv != null)
+            {
+                moves.SwapPvNode(lastPv.Move);
+            }
             for (int i = 0; i < moveCount; i++)
             {
                 Move move = moves.Get(i);
@@ -96,10 +123,10 @@ namespace Typhoon.Search
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
          
-                    int score = -AlphaBeta(position, -beta, -alpha, depth - 1, repetitionTable, node);
+                    int score = -AlphaBeta(position, -beta, -alpha, depth - 1,isPvLine, node, lastPv?.Next);
                  
                     position.UndoMove(previousState);
-
+                    isPvLine = false;
                     if (score > alpha)
                     {
                         alpha = score;
@@ -112,21 +139,18 @@ namespace Typhoon.Search
                 }
             }
 
-            repetitionTable.RemovePosition(position.Zobrist);
             if (noMoves) // No moves were legal.  Therefore it is checkmate or stalemate.
             {
-                return position.GetCheckersBitboard() == 0 ? 0 : -50000 - depth;
+                return position.GetCheckersBitboard() == 0 ? 0 : CHECKMATE - depth;
             }
             return alpha;
         }
 
-        public int Quiesce(Position position, int alpha, int beta, int depth, RepetitionTable repetitionTable)
+        public int Quiesce(Position position, int alpha, int beta, int depth)
         {
-            // Check for 3-repetition draw
-            ulong zobrist = position.Zobrist;
-            if (repetitionTable.AddPosition(zobrist) >= 3)
+            currQNodes++;
+            if (position.PositionIsThreefoldDraw())
             {
-                repetitionTable.RemovePosition(zobrist);
                 return 0;
             }
 
@@ -137,7 +161,6 @@ namespace Typhoon.Search
             }
             if (beta <= alpha)
             {
-                repetitionTable.RemovePosition(zobrist);
                 return alpha;
             }
 
@@ -168,7 +191,7 @@ namespace Typhoon.Search
                     BoardState previousState = new BoardState(move, position);
                     
                     position.DoMove(move);
-                    int score = -Quiesce(position, -beta, -alpha, depth-1, repetitionTable);
+                    int score = -Quiesce(position, -beta, -alpha, depth-1);
                     position.UndoMove(previousState);
                     if (score > alpha)
                     {
@@ -180,10 +203,10 @@ namespace Typhoon.Search
                     }
                 }
             }
-            repetitionTable.RemovePosition(zobrist);
+
             if (noMoves)
             {
-                return checkersBitboard != 0 ? -50000 - depth : standPat;
+                return checkersBitboard != 0 ? CHECKMATE - depth : standPat;
             }
             return alpha;
         }
