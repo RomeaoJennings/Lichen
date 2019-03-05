@@ -12,15 +12,17 @@ namespace Typhoon
         private const string engineName = "Typhoon 1.0.0";
         private const string author = "Romeao Jennings";
 
+        private static Position position;
+
         static void Main(string[] args)
         {
+            position = new Position();
             MainUCILoop();
         }
 
         static void MainUCILoop()
         {
             Console.WriteLine("Typhoon v. 1.0.0 by Romeao Jennings");
-            Position position = new Position();
             do
             {
                 string line = Console.ReadLine();
@@ -32,6 +34,9 @@ namespace Typhoon
                     case "uci":
                         DoUciInit();
                         break;
+                    case "position":
+                        LoadPosition(line);
+                        break;
                     case "d":
                         DisplayPosition(position);
                         break;
@@ -40,6 +45,39 @@ namespace Typhoon
                         break;
                 }
             } while (true);
+        }
+
+        static void LoadPosition(string command)
+        {
+            string[] elements = command.Split(' ');
+            int moves = command.IndexOf("moves");
+
+            // The position command can either provide "fen" or "startpos" for the base board, followed by 
+            // zero or more moves.
+            if (elements[1] == "startpos")
+            {
+                position = new Position();
+            }
+            else if (elements[1] == "fen")
+            {
+                string fenStr;
+                const int positionFenStrLength = 13;
+                if (moves == -1)
+                {
+                    fenStr = command.Substring(positionFenStrLength);
+                }
+                else
+                {
+                    fenStr = command.Substring(positionFenStrLength, moves - positionFenStrLength);
+                }
+                position = Position.FromFen(fenStr);
+            }
+            // process move list, if it exists
+            if (moves != -1)
+            {
+                string[] moveList = command.Substring(moves + 6).Split(' ');
+                position.ApplyUciMoveList(moveList);
+            }
         }
 
         static void DoUciInit()

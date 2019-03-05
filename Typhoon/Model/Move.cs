@@ -95,6 +95,42 @@ namespace Typhoon.Model
             
         }
 
+        // TODO: Add Validation
+        public static Move FromLongAlgebraic(Position position, string move)
+        {
+            int[] squares = position.GetPieceSquares();
+
+            int originSquare = Bitboards.GetSquareFromName(move.Substring(0, 2));
+            int destinationSquare = Bitboards.GetSquareFromName(move.Substring(2, 2));
+            int capturePiece = squares[destinationSquare];
+            int movedPiece = squares[originSquare];
+            
+            // Castle Moves
+            if (movedPiece == Position.KING && Bitboards.SquareDistance[originSquare, destinationSquare] > 1)
+            {
+                int castleDirection = Bitboards.GetColumn(destinationSquare) == 1 ? Position.KING : Position.QUEEN;
+                return new Move(originSquare, destinationSquare, false, true, castleDirection);
+            }
+            // En Passent and Promotion
+            if (movedPiece == Position.PAWN)
+            {
+                // En Passent
+                if (Bitboards.GetColumn(originSquare) != Bitboards.GetColumn(destinationSquare) &&
+                    capturePiece == Position.EMPTY)
+                {
+                    return new Move(originSquare, destinationSquare, true, false);
+                }
+                else if (move.Length > 4 && move[4] == '=')
+                {
+                    const string promotionMap = "KQRBN";
+                    int promotionPiece = promotionMap.IndexOf(move[5]);
+                    return new Move(originSquare, destinationSquare, capturePiece, promotionPiece);
+                }
+            }
+            // Everything else
+            return new Move(originSquare, destinationSquare, capturePiece);
+        }
+
         public static bool operator ==(Move m1, Move m2)
         {
             return m1.move == m2.move;

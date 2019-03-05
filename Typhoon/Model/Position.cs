@@ -218,6 +218,17 @@ namespace Typhoon.Model
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ApplyUciMoveList(string[] moves)
+        {
+            foreach (string move in moves)
+            {
+                DoMove(Move.FromLongAlgebraic(this, move));
+            }
+        }
+
+
+
         private void NewGame()
         {
             playerToMove = WHITE;
