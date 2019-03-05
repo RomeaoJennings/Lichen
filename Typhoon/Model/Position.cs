@@ -1068,7 +1068,6 @@ namespace Typhoon.Model
             return bb;
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetLeastValuablePiece(ref Bitboard attacks, ref int color, ref int piece)
         {
@@ -1136,6 +1135,41 @@ namespace Typhoon.Model
                 sb.Append(blankSquareCntr);
                 blankSquareCntr = 0;
             }   
+        }
+
+        public string Print()
+        {
+            const string topBorder = "╔═══╤═══╤═══╤═══╤═══╤═══╤═══╤═══╗\r\n";
+            const string midDivide = "╟───┼───┼───┼───┼───┼───┼───┼───╢";
+            const string botBorder = "╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝";
+            string[] pieceString = { "KQRBNP  ", "kqrbnp  " };
+
+            StringBuilder result = new StringBuilder(topBorder);
+
+            for (int i = 63; i >= 0; --i)
+            {
+                int color = (Bitboards.SquareBitboards[i] & pieces[WHITE][ALL_PIECES]) != 0 ? 0 : 1;
+                string cell = $"│ {pieceString[color][squares[i]]} ";
+
+                if (i % 8 == 7)
+                {
+                    cell = cell.Replace("│", "║");
+                }
+                result.Append(cell);
+                if (i % 8 == 0)
+                {
+                    result.AppendLine("║");
+                    if (i != 0)
+                    {
+                        result.AppendLine(midDivide);
+                    }
+                    else
+                    {
+                        result.AppendLine(botBorder);
+                    }
+                }
+            }
+            return result.ToString();
         }
     }
 }
