@@ -141,7 +141,7 @@ namespace Typhoon.AI
             {
                 return 0;
             }
-            int current = -100000;
+            int current = CHECKMATE;
             bool noMoves = true;
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
@@ -156,13 +156,25 @@ namespace Typhoon.AI
                 Move move = moves.Get(i);
                 if (position.IsLegalMove(move, pinnedPiecesBitboard))
                 {
-                    noMoves = false;
+                    
                     PvNode node = new PvNode(move);
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
+                    int score;
 
-                    int score = -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
-
+                    // Perform PVS Search.  Full window on first move, and null windows on remaining moves.
+                    if (noMoves)
+                    {
+                        noMoves = false;
+                        score = -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
+                    }
+                    else
+                    {
+                        score = -AlphaBeta(position, -alpha - 1, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
+                        // If null move search fails, search again with full window.
+                        if (score > alpha && score < beta)
+                            score= -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
+                    }
                     position.UndoMove(previousState);
                     isPvLine = false;
                     if (score >= current)
