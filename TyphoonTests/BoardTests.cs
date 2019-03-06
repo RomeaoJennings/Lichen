@@ -506,7 +506,34 @@ namespace TyphoonTests
                 Position position = Position.FromFen("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 0");
                 Assert.AreEqual(-225, position.See(new Move(Position.D3, Position.E5, Position.PAWN)));
             }
-        
+        }
+
+        [TestClass]
+        public class ApplyUciMoveList
+        {
+            [TestMethod]
+            public void ComputesCorrectly()
+            {
+                Position position = new Position();
+                string[] moves = {
+                    "e2e4", "d7d5",
+                    "e4e5", "d5d4",
+                    "d1f3", "a7a6",
+                    "f1c4", "e7e6",
+                    "d2d3", "b8c6",
+                    "f3g3", "b7b5",
+                    "c4b3", "g8h6",
+                    "g1f3", "h6f5",
+                    "g3h3", "c6a5",
+                    "g2g4", "f8b4",
+                    "c2c3", "d4c3",
+                    "b2c3", "a5b3",
+                    "a2b3", "f5d4",
+                    "f3d4", "d8d4",
+                    "e1g1"
+                };
+                position.ApplyUciMoveList(moves);
+            }
         }
     }
 }

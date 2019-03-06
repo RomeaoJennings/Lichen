@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 using Typhoon.Model;
-using Typhoon.Search;
+using Typhoon.AI;
 
 namespace UserInterface
 {

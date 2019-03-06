@@ -108,7 +108,7 @@ namespace Typhoon.Model
             // Castle Moves
             if (movedPiece == Position.KING && Bitboards.SquareDistance[originSquare, destinationSquare] > 1)
             {
-                int castleDirection = Bitboards.GetColumn(destinationSquare) == 1 ? Position.KING : Position.QUEEN;
+                int castleDirection = Bitboards.GetColumn(destinationSquare) == 6 ? Position.KING : Position.QUEEN;
                 return new Move(originSquare, destinationSquare, false, true, castleDirection);
             }
             // En Passent and Promotion
@@ -185,19 +185,6 @@ namespace Typhoon.Model
 
             StringBuilder sb = new StringBuilder();
             sb.Append(Bitboards.GetNameFromSquare(OriginSquare()));
-            if (CapturePiece() != Position.EMPTY)
-            {
-                sb.Append('x');
-                sb.Append(pieceStr[CapturePiece()]);
-            }
-            else if (IsEnPassent())
-            {
-                sb.Append("xP(EP)");
-            }
-            else
-            {
-                sb.Append('-');
-            }
             sb.Append(Bitboards.GetNameFromSquare(DestinationSquare()));
             if (PromotionType() != Position.EMPTY)
             {

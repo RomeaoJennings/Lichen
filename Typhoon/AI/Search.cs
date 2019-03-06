@@ -6,12 +6,34 @@ using System.Text;
 using System.Threading.Tasks;
 using Typhoon.Model;
 
-namespace Typhoon.Search
+namespace Typhoon.AI
 {
     using Bitboard = UInt64;
 
     public class Search
     {
+        public event EventHandler<SearchCompletedEventArgs> IterationCompleted;
+        public event EventHandler<SearchCompletedEventArgs> SearchCompleted;
+
+        protected void OnIterationCompleted(int ply, int score, bool searchComplete = false)
+        {
+            if (searchComplete)
+            {
+                if (SearchCompleted != null)
+                {
+                    SearchCompleted(this, new SearchCompletedEventArgs(ply + 1, score, principalVariations[ply]));
+                }
+            }
+            else
+            {
+                if (IterationCompleted != null)
+                {
+                    IterationCompleted(this, new SearchCompletedEventArgs(ply + 1, score, principalVariations[ply]));
+                }
+            }
+        }
+
+
         public const int INITIAL_ALPHA = -10000000;
         public const int INITIAL_BETA = 10000000;
         public const int CHECKMATE = -50000;
@@ -39,11 +61,11 @@ namespace Typhoon.Search
             Move bestMove = new Move();
             PvNode bestNode = new PvNode();
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
-
+            int alpha=0;
             for (int depth = 0; depth < maxPly; depth++)
             {
 
-                int alpha = INITIAL_ALPHA;
+                alpha = INITIAL_ALPHA;
                 int beta = INITIAL_BETA;
                 bool isPvLine = true;
                 currNodes = 0;
@@ -82,6 +104,7 @@ namespace Typhoon.Search
                 principalVariations[depth] = bestNode;
                 nodes[depth] = currNodes;
                 qnodes[depth] = currQNodes - currNodes;
+                OnIterationCompleted(depth, alpha);
             }
             for (int i = 0; i < maxPly; i++)
             {
@@ -96,6 +119,7 @@ namespace Typhoon.Search
                 bestNode = bestNode.Next;
             }
             Debug.WriteLine(sb.ToString());
+            OnIterationCompleted(maxPly - 1, alpha, true);
             return bestMove;
         }
 
@@ -108,20 +132,17 @@ namespace Typhoon.Search
             PvNode pvNode,
             PvNode lastPv)
         {
-
             if (depth == 0)
             {
                 currNodes++;
                 return Quiesce(position, alpha, beta, depth);
             }
-
             if (position.PositionIsThreefoldDraw())
             {
                 return 0;
             }
 
             bool noMoves = true;
-
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
@@ -129,6 +150,7 @@ namespace Typhoon.Search
             {
                 moves.SwapPvNode(lastPv.Move);
             }
+
             for (int i = 0; i < moveCount; i++)
             {
                 Move move = moves.Get(i);

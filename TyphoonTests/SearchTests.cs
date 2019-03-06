@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Typhoon.Search;
+using Typhoon.AI;
 
 namespace TyphoonTests
 {

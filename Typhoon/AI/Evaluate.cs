@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Typhoon.Model;
 
-namespace Typhoon.Search
+namespace Typhoon.AI
 {
     using Bitboard = UInt64;
 
