@@ -70,14 +70,14 @@ namespace Typhoon.AI
                 bool isPvLine = true;
                 currNodes = 0;
                 currQNodes = 0;
+                if (isPvLine)
+                {
+                    moves.SwapPvNode(bestNode.Move);
+                }
+                
                 for (int i = 0; i < moveCount; i++)
                 {
-                    if (isPvLine)
-                    {
-                        moves.SwapPvNode(bestNode.Move);
-                    }
                     Move move = moves.Get(i);
-
                     if (position.IsLegalMove(move, pinnedPiecesBitboard))
                     {
                         BoardState previousState = new BoardState(move, position);
@@ -141,7 +141,7 @@ namespace Typhoon.AI
             {
                 return 0;
             }
-
+            int current = -100000;
             bool noMoves = true;
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
@@ -165,14 +165,18 @@ namespace Typhoon.AI
 
                     position.UndoMove(previousState);
                     isPvLine = false;
-                    if (score > alpha)
+                    if (score >= current)
                     {
-                        alpha = score;
+                        current = score;
                         pvNode.Next = node;
-                    }
-                    if (score >= beta)
-                    {
-                        break;
+                        if (score >= alpha)
+                        {
+                            alpha = score;
+                        }
+                        if (score >= beta)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -181,7 +185,7 @@ namespace Typhoon.AI
             {
                 return position.GetCheckersBitboard() == 0 ? 0 : CHECKMATE - depth;
             }
-            return alpha;
+            return current;
         }
 
         public int Quiesce(Position position, int alpha, int beta, int depth)
