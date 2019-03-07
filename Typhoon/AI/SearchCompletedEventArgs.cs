@@ -11,10 +11,10 @@ namespace Typhoon.AI
         public int Ply { get; private set; }
         public int Score { get; private set; }
         public PvNode PrincipalVariation { get; private set; }
-        public int NodesPerSecond { get; private set; }
-        public int Nodes { get; private set; }
+        public long NodesPerSecond { get; private set; }
+        public long Nodes { get; private set; }
 
-        public SearchCompletedEventArgs(int ply, int score, PvNode principalVariation, int nodes, int nps)
+        public SearchCompletedEventArgs(int ply, int score, PvNode principalVariation, long nodes, long nps)
         {
             Ply = ply;
             Score = score;

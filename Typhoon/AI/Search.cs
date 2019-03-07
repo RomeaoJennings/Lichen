@@ -16,11 +16,11 @@ namespace Typhoon.AI
         public const int INITIAL_BETA = 10000000;
         public const int CHECKMATE = -50000;
 
-        private int nodeCounter;
-        private int nodesPerSecond;
+        private long nodeCounter;
+        private long nodesPerSecond;
 
-        public int Nodes { get { return nodeCounter; } }
-        public int NodesPerSecond { get { return nodesPerSecond; } }
+        public long Nodes { get { return nodeCounter; } }
+        public long NodesPerSecond { get { return nodesPerSecond; } }
 
 
 
@@ -36,8 +36,6 @@ namespace Typhoon.AI
                     ply + 1, score, principalVariations[ply], nodeCounter, nodesPerSecond));
             }
         }
-
-
 
         // An array of principal variations at each ply of the ID framework.
         private PvNode[] principalVariations;
@@ -137,7 +135,7 @@ namespace Typhoon.AI
                 }
                 previousScore = alpha;
                 principalVariations[depth] = bestNode;
-                nodesPerSecond = (int)(Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds));
+                nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
                 OnIterationCompleted(depth, alpha);
             }
             stopwatch.Stop();

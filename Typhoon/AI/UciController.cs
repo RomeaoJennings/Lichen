@@ -70,7 +70,7 @@ namespace Typhoon.AI
             search = new Search();
             search.IterationCompleted += SendIterationInfo;
             search.SearchCompleted += BestMove;
-            search.IterativeDeepening(5, position);
+            search.IterativeDeepening(6, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
