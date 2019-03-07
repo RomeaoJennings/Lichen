@@ -120,10 +120,10 @@ namespace Typhoon.Model
                 {
                     return new Move(originSquare, destinationSquare, true, false);
                 }
-                else if (move.Length > 4 && move[4] == '=')
+                else if (move.Length > 4)
                 {
-                    const string promotionMap = "KQRBN";
-                    int promotionPiece = promotionMap.IndexOf(move[5]);
+                    const string promotionMap = "-qrbn";
+                    int promotionPiece = promotionMap.IndexOf(move[4]);
                     return new Move(originSquare, destinationSquare, capturePiece, promotionPiece);
                 }
             }

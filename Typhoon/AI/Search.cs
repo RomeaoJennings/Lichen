@@ -62,6 +62,7 @@ namespace Typhoon.AI
             PvNode bestNode = new PvNode();
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
             int alpha=0;
+            int previousScore = 0;
             for (int depth = 0; depth < maxPly; depth++)
             {
 
@@ -74,7 +75,7 @@ namespace Typhoon.AI
                 {
                     moves.SwapPvNode(bestNode.Move);
                 }
-                
+
                 for (int i = 0; i < moveCount; i++)
                 {
                     Move move = moves.Get(i);
@@ -83,14 +84,53 @@ namespace Typhoon.AI
                         BoardState previousState = new BoardState(move, position);
                         position.DoMove(move);
                         PvNode node = new PvNode(move);
-                        score = -AlphaBeta(
-                            position,
-                            -beta,
-                            -alpha,
-                            depth,
-                            isPvLine,
-                            node,
-                            bestNode.Next);
+
+                        // If depth is zero no previous score to use.  Therefore do full window search
+                        if (depth == 0)
+                        {
+                            score = -AlphaBeta(
+                                position,
+                                -beta,
+                                -alpha,
+                                depth,
+                                isPvLine,
+                                node,
+                                bestNode.Next);
+                        }
+                        else
+                        {
+                            int aspirationAlphaDelta = 100;
+                            int aspirationBetaDelta = 100;
+                            bool failed;
+                            int aspireAlpha = previousScore - aspirationAlphaDelta;
+                            int aspireBeta = previousScore + aspirationBetaDelta;
+                            do
+                            {
+                                failed = false;
+                                
+                                score = -AlphaBeta(
+                                    position,
+                                    -aspireBeta,
+                                    -aspireAlpha,
+                                    depth,
+                                    isPvLine,
+                                    node,
+                                    bestNode.Next);
+                                if (score <= aspireAlpha)
+                                {
+                                    aspirationAlphaDelta <<= 2;
+                                    aspireAlpha = previousScore - aspirationAlphaDelta;
+                                    failed = true;
+                                }
+                                else if (score >= aspireBeta)
+                                {
+                                    aspirationBetaDelta <<= 2;
+                                    aspireBeta = previousScore + aspirationBetaDelta;
+                                    failed = true;
+                                }
+                            } while (failed);
+                            
+                        }
                         position.UndoMove(previousState);
                         isPvLine = false;
                         if (score > alpha)
@@ -101,6 +141,7 @@ namespace Typhoon.AI
                         }
                     }
                 }
+                previousScore = alpha;
                 principalVariations[depth] = bestNode;
                 nodes[depth] = currNodes;
                 qnodes[depth] = currQNodes - currNodes;
@@ -141,7 +182,7 @@ namespace Typhoon.AI
             {
                 return 0;
             }
-            int current = CHECKMATE;
+            int current = INITIAL_ALPHA;
             bool noMoves = true;
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
