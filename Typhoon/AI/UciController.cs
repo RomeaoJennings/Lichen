@@ -85,6 +85,10 @@ namespace Typhoon.AI
             message.Append(e.Ply);
             message.Append(" score cp ");
             message.Append(e.Score);
+            message.Append(" nodes ");
+            message.Append(e.Nodes);
+            message.Append(" nps ");
+            message.Append(e.NodesPerSecond);
             message.Append(" pv");
             PvNode curr = e.PrincipalVariation;
             while (curr != null)

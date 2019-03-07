@@ -12,47 +12,43 @@ namespace Typhoon.AI
 
     public class Search
     {
+        public const int INITIAL_ALPHA = -10000000;
+        public const int INITIAL_BETA = 10000000;
+        public const int CHECKMATE = -50000;
+
+        private int nodeCounter;
+        private int nodesPerSecond;
+
+        public int Nodes { get { return nodeCounter; } }
+        public int NodesPerSecond { get { return nodesPerSecond; } }
+
+
+
         public event EventHandler<SearchCompletedEventArgs> IterationCompleted;
         public event EventHandler<SearchCompletedEventArgs> SearchCompleted;
 
         protected void OnIterationCompleted(int ply, int score, bool searchComplete = false)
         {
-            if (searchComplete)
+            EventHandler<SearchCompletedEventArgs> eventToCall = searchComplete ? SearchCompleted : IterationCompleted;
+            if (eventToCall != null)
             {
-                if (SearchCompleted != null)
-                {
-                    SearchCompleted(this, new SearchCompletedEventArgs(ply + 1, score, principalVariations[ply]));
-                }
-            }
-            else
-            {
-                if (IterationCompleted != null)
-                {
-                    IterationCompleted(this, new SearchCompletedEventArgs(ply + 1, score, principalVariations[ply]));
-                }
+                eventToCall(this, new SearchCompletedEventArgs(
+                    ply + 1, score, principalVariations[ply], nodeCounter, nodesPerSecond));
             }
         }
 
 
-        public const int INITIAL_ALPHA = -10000000;
-        public const int INITIAL_BETA = 10000000;
-        public const int CHECKMATE = -50000;
-
-        private int[] nodes;
-        private int[] qnodes;
-
-        private int currNodes;
-        private int currQNodes;
 
         // An array of principal variations at each ply of the ID framework.
         private PvNode[] principalVariations;
 
         public Move IterativeDeepening(int maxPly, Position position)
         {
-            Stopwatch sw = new Stopwatch();
+            nodeCounter = 1;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             principalVariations = new PvNode[maxPly];
-            nodes = new int[maxPly];
-            qnodes = new int[maxPly];
 
             MoveList moves = position.GetAllMoves();
 
@@ -69,8 +65,6 @@ namespace Typhoon.AI
                 alpha = INITIAL_ALPHA;
                 int beta = INITIAL_BETA;
                 bool isPvLine = true;
-                currNodes = 0;
-                currQNodes = 0;
                 if (isPvLine)
                 {
                     moves.SwapPvNode(bestNode.Move);
@@ -143,23 +137,10 @@ namespace Typhoon.AI
                 }
                 previousScore = alpha;
                 principalVariations[depth] = bestNode;
-                nodes[depth] = currNodes;
-                qnodes[depth] = currQNodes - currNodes;
+                nodesPerSecond = (int)(Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds));
                 OnIterationCompleted(depth, alpha);
             }
-            for (int i = 0; i < maxPly; i++)
-            {
-                Debug.WriteLine($"Ply {i + 1}: Nodes: {nodes[i]} Q-Nodes: {qnodes[i]}");
-            }
-
-            StringBuilder sb = new StringBuilder();
-            while (bestNode != null)
-            {
-                sb.Append(bestNode.Move);
-                sb.Append(" ");
-                bestNode = bestNode.Next;
-            }
-            Debug.WriteLine(sb.ToString());
+            stopwatch.Stop();
             OnIterationCompleted(maxPly - 1, alpha, true);
             return bestMove;
         }
@@ -175,13 +156,16 @@ namespace Typhoon.AI
         {
             if (depth == 0)
             {
-                currNodes++;
                 return Quiesce(position, alpha, beta, depth);
             }
+
+            nodeCounter++;
+
             if (position.PositionIsThreefoldDraw())
             {
                 return 0;
             }
+
             int current = INITIAL_ALPHA;
             bool noMoves = true;
             MoveList moves = position.GetAllMoves();
@@ -216,6 +200,7 @@ namespace Typhoon.AI
                         if (score > alpha && score < beta)
                             score= -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
                     }
+
                     position.UndoMove(previousState);
                     isPvLine = false;
                     if (score >= current)
@@ -243,7 +228,7 @@ namespace Typhoon.AI
 
         public int Quiesce(Position position, int alpha, int beta, int depth)
         {
-            currQNodes++;
+            nodeCounter++;
             if (position.PositionIsThreefoldDraw())
             {
                 return 0;
