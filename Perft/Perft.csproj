@@ -72,8 +72,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Typhoon\Lichen.csproj">
-      <Project>{9DE2033D-C7CA-4F35-952E-6F34C25E9976}</Project>
+    <ProjectReference Include="..\Lichen\Lichen.csproj">
+      <Project>{9de2033d-c7ca-4f35-952e-6f34c25e9976}</Project>
       <Name>Lichen</Name>
     </ProjectReference>
   </ItemGroup>

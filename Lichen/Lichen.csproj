@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{9DE2033D-C7CA-4F35-952E-6F34C25E9976}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Typhoon</RootNamespace>
-    <AssemblyName>Typhoon</AssemblyName>
+    <RootNamespace>Lichen</RootNamespace>
+    <AssemblyName>Lichen</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

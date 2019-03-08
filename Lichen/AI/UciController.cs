@@ -73,7 +73,7 @@ namespace Lichen.AI
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
         {
-            Console.WriteLine($"bestmove {e.PrincipalVariation.Move}");
+            Console.WriteLine($"bestmove {e.PrincipalVariation[0]}");
         }
 
         private void SendIterationInfo(object sender, SearchCompletedEventArgs e)
@@ -81,8 +81,18 @@ namespace Lichen.AI
             StringBuilder message = new StringBuilder();
             message.Append("info depth ");
             message.Append(e.Ply);
-            message.Append(" score cp ");
-            message.Append(e.Score);
+            message.Append(" score ");
+            int absScore = Math.Abs(e.Score);
+            if (absScore > 40000)
+            {
+                message.Append("mate ");
+                message.Append(50000 - absScore);
+            }
+            else
+            {
+                message.Append("cp ");
+                message.Append(e.Score);
+            }
             message.Append(" nodes ");
             message.Append(e.Nodes);
             message.Append(" nps ");
@@ -90,12 +100,12 @@ namespace Lichen.AI
             message.Append(" hashfull ");
             message.Append(e.HashFull);
             message.Append(" pv");
-            PvNode curr = e.PrincipalVariation;
-            while (curr != null)
+            int cntr = 0;
+            Move blankMove = new Move();
+            while (cntr < e.PrincipalVariation.Length && e.PrincipalVariation[cntr] != blankMove)
             {
                 message.Append(" ");
-                message.Append(curr.Move);
-                curr = curr.Next;
+                message.Append(e.PrincipalVariation[cntr++]);
             }
             Console.WriteLine(message.ToString());
         }

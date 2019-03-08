@@ -26,17 +26,16 @@ namespace Lichen.AI
             return entry != null && key == entry.Zobrist;
         }
 
+        
         public void AddEntry(ulong key, int score, NodeType nodeType, int depth, Move bestMove)
         {
             ulong index = key % count;
             if (entries[index] == null)
             {
                 filledEntries++;
-
             }
             else if (entries[index].Depth > depth) // If existing entry with higher depth, do not replace.
             {
-                
                 return;
             }
             entries[index] = new TableEntry(key, score, nodeType, depth, bestMove);

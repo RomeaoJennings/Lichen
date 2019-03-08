@@ -28,46 +28,9 @@ namespace Lichen.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SwapPvNode(Move pvMove)
+        public void Sort(int[] values)
         {
-            for (int i = 0; i < count; i++)
-            {
-                if (moves[i] == pvMove)
-                {
-                    moves[i] = moves[0];
-                    moves[0] = pvMove;
-                    return;
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool SwapMove(Move move, int destinationIndex, int startIndex)
-        {
-            for (int i=startIndex;i<count;i++)
-            {
-                if (moves[i] == move)
-                {
-                    moves[i] = moves[destinationIndex];
-                    moves[destinationIndex] = move;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Sort(Move? pvMove, Move? hashMove)
-        {
-            int cntr = 0;
-            if (pvMove != null && SwapMove((Move)pvMove, cntr, cntr))
-            {
-                cntr++;
-            }
-            if (hashMove != null && SwapMove((Move)hashMove, cntr, cntr))
-            {
-                cntr++;
-            }
+            Array.Sort(values, moves, 0, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
