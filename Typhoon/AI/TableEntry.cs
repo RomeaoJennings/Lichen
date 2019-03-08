@@ -1,7 +1,7 @@
 ﻿
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace Typhoon.AI
+namespace Lichen.AI
 {
     public class TableEntry
     {

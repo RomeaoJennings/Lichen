@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     using Bitboard = UInt64;
 

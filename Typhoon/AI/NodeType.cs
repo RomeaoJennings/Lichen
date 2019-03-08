@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Typhoon.AI
+namespace Lichen.AI
 {
     public enum NodeType
     {

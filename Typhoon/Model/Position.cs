@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     using Bitboard = UInt64;
 

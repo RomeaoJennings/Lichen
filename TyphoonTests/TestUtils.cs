@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace TyphoonTests
+namespace LichenTests
 {
     using Bitboard = UInt64;
     public delegate void PawnMoveDelegate(List<Move> moves, int color, Bitboard destinationBitboard);

@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace TyphoonTests
+namespace LichenTests
 {
     using Bitboard = UInt64;
 

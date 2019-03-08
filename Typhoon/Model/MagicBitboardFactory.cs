@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     using Bitboard = UInt64;
 

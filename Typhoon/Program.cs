@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Typhoon.AI;
+using Lichen.AI;
 
-namespace Typhoon
+namespace Lichen
 {
     static class Program
     { 

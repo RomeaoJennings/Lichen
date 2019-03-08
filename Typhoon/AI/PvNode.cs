@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace Typhoon.AI
+namespace Lichen.AI
 {
     public class PvNode
     {

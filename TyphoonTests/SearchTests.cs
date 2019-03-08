@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Typhoon.AI;
+using Lichen.AI;
 
-namespace TyphoonTests
+namespace LichenTests
 {
     
     public class SearchTests
@@ -14,7 +14,7 @@ namespace TyphoonTests
             public void TestMethod1()
             {
                 Search search = new Search();
-                var bestMove = search.IterativeDeepening(1, new Typhoon.Model.Position());
+                var bestMove = search.IterativeDeepening(1, new Lichen.Model.Position());
             }
         }
     }

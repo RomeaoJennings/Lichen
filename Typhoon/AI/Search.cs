@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace Typhoon.AI
+namespace Lichen.AI
 {
     using Bitboard = UInt64;
 

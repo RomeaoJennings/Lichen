@@ -104,9 +104,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Typhoon\Typhoon.csproj">
+    <ProjectReference Include="..\Typhoon\Lichen.csproj">
       <Project>{9de2033d-c7ca-4f35-952e-6f34c25e9976}</Project>
-      <Name>Typhoon</Name>
+      <Name>Lichen</Name>
     </ProjectReference>
     <ProjectReference Include="..\UiComponents\UiComponents.csproj">
       <Project>{50A69C1E-2F54-4382-9B66-18AF2EA4F62F}</Project>

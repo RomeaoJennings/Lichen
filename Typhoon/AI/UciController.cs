@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace Typhoon.AI
+namespace Lichen.AI
 {
     public class UciController
     {
         private Position position;
 
-        const string engineName = "Typhoon v. 1.0.0";
+        const string engineName = "Lichen v. 1.0.0";
         const string author = "Romeao Jennings";
 
         public UciController()

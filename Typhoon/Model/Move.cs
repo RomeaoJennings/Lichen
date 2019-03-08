@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Runtime.CompilerServices;
 
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     public struct Move : IComparable
     {

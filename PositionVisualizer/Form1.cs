@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
-using Typhoon.Model;
-using Typhoon.AI;
+using Lichen.Model;
+using Lichen.AI;
 
 namespace UserInterface
 {

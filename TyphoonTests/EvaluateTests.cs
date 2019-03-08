@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Typhoon.AI;
+using Lichen.AI;
 
-namespace TyphoonTests
+namespace LichenTests
 {
     
     public class EvaluateTests
@@ -13,7 +13,7 @@ namespace TyphoonTests
             [TestMethod]
             public void StartingPositionHasZeroScore()
             {
-                Assert.AreEqual(0, Evaluate.EvaluatePosition(new Typhoon.Model.Position()));
+                Assert.AreEqual(0, Evaluate.EvaluatePosition(new Lichen.Model.Position()));
             }
         }
     }

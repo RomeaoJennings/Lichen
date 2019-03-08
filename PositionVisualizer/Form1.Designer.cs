@@ -89,7 +89,7 @@ namespace UserInterface
             this.Controls.Add(this.btnUndo);
             this.Controls.Add(this.boardView);
             this.Name = "Form1";
-            this.Text = "Typhoon Chess";
+            this.Text = "Lichen Chess";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
 

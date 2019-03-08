@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     public struct CastleRights
     {

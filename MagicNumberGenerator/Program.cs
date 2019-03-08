@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-using Typhoon.Model;
+using Lichen.Model;
 
 namespace MagicNumberGenerator
 {

@@ -79,9 +79,9 @@
     <Compile Include="SearchTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Typhoon\Typhoon.csproj">
+    <ProjectReference Include="..\Typhoon\Lichen.csproj">
       <Project>{9de2033d-c7ca-4f35-952e-6f34c25e9976}</Project>
-      <Name>Typhoon</Name>
+      <Name>Lichen</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

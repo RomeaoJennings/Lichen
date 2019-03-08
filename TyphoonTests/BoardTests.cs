@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Typhoon.Model;
+using Lichen.Model;
 
-namespace TyphoonTests
+namespace LichenTests
 {
     using Bitboard = UInt64;
 
@@ -531,7 +531,8 @@ namespace TyphoonTests
                     "a2b3", "f5d4",
                     "f3d4", "d8d4",
                     "e1g1"
-                };
+                };
+
                 position.ApplyUciMoveList(moves);
             }
         }

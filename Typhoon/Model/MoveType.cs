@@ -1,5 +1,5 @@
 ﻿
-namespace Typhoon.Model
+namespace Lichen.Model
 {
     public enum MoveType
     {

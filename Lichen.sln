@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Typhoon", "Typhoon\Typhoon.csproj", "{9DE2033D-C7CA-4F35-952E-6F34C25E9976}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lichen", "Typhoon\Lichen.csproj", "{9DE2033D-C7CA-4F35-952E-6F34C25E9976}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitboardVisualizer", "BitboardVisualizer\BitboardVisualizer.csproj", "{31B7D031-4057-4E75-8F53-6413014AD5FD}"
 EndProject
@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyphoonTests", "TyphoonTests\TyphoonTests.csproj", "{1E4585ED-C440-4446-951A-C7A23CB30082}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LichenTests", "TyphoonTests\LichenTests.csproj", "{1E4585ED-C440-4446-951A-C7A23CB30082}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicNumberGenerator", "MagicNumberGenerator\MagicNumberGenerator.csproj", "{4C1861BD-7695-4302-8307-1663543B9F2B}"
 EndProject
