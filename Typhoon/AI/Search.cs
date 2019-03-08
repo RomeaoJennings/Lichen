@@ -18,14 +18,25 @@ namespace Typhoon.AI
 
         private long nodeCounter;
         private long nodesPerSecond;
+        private TranspositionTable transpositionTable;
+
+        public TranspositionTable TranspositionTable { get { return transpositionTable; } }
 
         public long Nodes { get { return nodeCounter; } }
         public long NodesPerSecond { get { return nodesPerSecond; } }
 
-
-
         public event EventHandler<SearchCompletedEventArgs> IterationCompleted;
         public event EventHandler<SearchCompletedEventArgs> SearchCompleted;
+
+        public Search()
+        {
+            transpositionTable = new TranspositionTable();
+        }
+
+        public Search(TranspositionTable tt)
+        {
+            transpositionTable = tt;
+        }
 
         protected void OnIterationCompleted(int ply, int score, bool searchComplete = false)
         {
@@ -33,7 +44,7 @@ namespace Typhoon.AI
             if (eventToCall != null)
             {
                 eventToCall(this, new SearchCompletedEventArgs(
-                    ply + 1, score, principalVariations[ply], nodeCounter, nodesPerSecond));
+                    ply + 1, score, principalVariations[ply], nodeCounter, nodesPerSecond, transpositionTable.TableUsage));
             }
         }
 
@@ -91,8 +102,8 @@ namespace Typhoon.AI
                         }
                         else
                         {
-                            int aspirationAlphaDelta = 100;
-                            int aspirationBetaDelta = 100;
+                            int aspirationAlphaDelta = 50;
+                            int aspirationBetaDelta = 50;
                             bool failed;
                             int aspireAlpha = previousScore - aspirationAlphaDelta;
                             int aspireBeta = previousScore + aspirationBetaDelta;
@@ -152,6 +163,33 @@ namespace Typhoon.AI
             PvNode pvNode,
             PvNode lastPv)
         {
+            int originalAlpha = alpha;
+            // Check transposition table
+            TableEntry ttEntry;
+            Move? hashMove = null;
+            if (transpositionTable.GetEntry(position.Zobrist, out ttEntry))
+            {
+                hashMove = ttEntry.BestMove;
+                if (ttEntry.Depth >= depth)
+                {
+                    if (ttEntry.NodeType == NodeType.Exact)
+                    {
+                        return ttEntry.Score;
+                    }
+                    if (ttEntry.NodeType == NodeType.LowerBound)
+                    {
+                        if (ttEntry.Score > alpha)
+                        {
+                            alpha = ttEntry.Score;
+                        }
+                    }
+                    else if (ttEntry.Score < beta) // Upper Bound Node
+                    {
+                        beta = ttEntry.Score;
+                    }
+                }
+            }
+
             if (depth == 0)
             {
                 return Quiesce(position, alpha, beta, depth);
@@ -166,12 +204,17 @@ namespace Typhoon.AI
 
             int current = INITIAL_ALPHA;
             bool noMoves = true;
+            Move bestMove = new Move();
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
-            if (isPvLine && lastPv != null)
+            if (isPvLine)
             {
-                moves.SwapPvNode(lastPv.Move);
+                moves.Sort( lastPv?.Move, hashMove);
+            }
+            else
+            {
+                moves.Sort( null, hashMove);
             }
 
             for (int i = 0; i < moveCount; i++)
@@ -198,12 +241,12 @@ namespace Typhoon.AI
                         if (score > alpha && score < beta)
                             score= -AlphaBeta(position, -beta, -alpha, depth - 1, isPvLine, node, lastPv?.Next);
                     }
-
                     position.UndoMove(previousState);
                     isPvLine = false;
                     if (score >= current)
                     {
                         current = score;
+                        bestMove = move;
                         pvNode.Next = node;
                         if (score >= alpha)
                         {
@@ -221,6 +264,20 @@ namespace Typhoon.AI
             {
                 return position.GetCheckersBitboard() == 0 ? 0 : CHECKMATE - depth;
             }
+            NodeType nodeType;
+            if (current <= originalAlpha)
+            {
+                nodeType = NodeType.UpperBound;
+            }
+            else if (current >= beta)
+            {
+                nodeType = NodeType.LowerBound;
+            }
+            else
+            {
+                nodeType = NodeType.Exact;
+            }
+            transpositionTable.AddEntry(position.Zobrist, alpha, nodeType, depth, bestMove);
             return current;
         }
 
@@ -286,6 +343,7 @@ namespace Typhoon.AI
             {
                 return checkersBitboard != 0 ? CHECKMATE - depth : standPat;
             }
+
             return alpha;
         }
     }

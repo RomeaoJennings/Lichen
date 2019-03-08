@@ -9,6 +9,7 @@ namespace Typhoon.Model
 {
     public class MoveList
     {
+        private readonly int[] pieceValues = { 0, 900, 500, 350, 325, 100 };
         private Move[] moves;
         private int count;
         public int Count { get { return count; } }
@@ -37,6 +38,35 @@ namespace Typhoon.Model
                     moves[0] = pvMove;
                     return;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool SwapMove(Move move, int destinationIndex, int startIndex)
+        {
+            for (int i=startIndex;i<count;i++)
+            {
+                if (moves[i] == move)
+                {
+                    moves[i] = moves[destinationIndex];
+                    moves[destinationIndex] = move;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Sort(Move? pvMove, Move? hashMove)
+        {
+            int cntr = 0;
+            if (pvMove != null && SwapMove((Move)pvMove, cntr, cntr))
+            {
+                cntr++;
+            }
+            if (hashMove != null && SwapMove((Move)hashMove, cntr, cntr))
+            {
+                cntr++;
             }
         }
 

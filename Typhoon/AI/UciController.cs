@@ -11,14 +11,12 @@ namespace Typhoon.AI
     public class UciController
     {
         private Position position;
-        private Search search;
 
         const string engineName = "Typhoon v. 1.0.0";
         const string author = "Romeao Jennings";
 
         public UciController()
         {
-            search = new Search();
             position = new Position();
         }
 
@@ -67,7 +65,7 @@ namespace Typhoon.AI
 
         private void DoSearch()
         {
-            search = new Search();
+            Search search = new Search();
             search.IterationCompleted += SendIterationInfo;
             search.SearchCompleted += BestMove;
             search.IterativeDeepening(6, position);
@@ -89,6 +87,8 @@ namespace Typhoon.AI
             message.Append(e.Nodes);
             message.Append(" nps ");
             message.Append(e.NodesPerSecond);
+            message.Append(" hashfull ");
+            message.Append(e.HashFull);
             message.Append(" pv");
             PvNode curr = e.PrincipalVariation;
             while (curr != null)
