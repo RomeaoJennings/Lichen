@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\NodeType.cs" />
+    <Compile Include="AI\PvNode.cs" />
     <Compile Include="AI\PvTable.cs" />
     <Compile Include="AI\TableEntry.cs" />
     <Compile Include="AI\TranspositionTable.cs" />

@@ -49,7 +49,7 @@ namespace Lichen.AI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ExtractPrincipalVariation(int length, Position position)
+        private void ExtractPrincipalVariation(int length, Position position, PvNode pvNode)
         {
             Stack<BoardState> previousState = new Stack<BoardState>(length);
             principalVariation = new Move[length];
@@ -72,6 +72,28 @@ namespace Lichen.AI
             {
                 position.UndoMove(previousState.Pop());
             }
+
+            int cntr = 0;
+            
+            // Debugging purposes 
+            StringBuilder sb = new StringBuilder("TT: ");
+            foreach (Move m in principalVariation)
+                sb.Append($"{m} ");
+            sb.Append("\r\nPV: ");
+            bool print = false;
+            while (pvNode != null)
+            {
+                sb.Append($"{pvNode.Move} ");
+                if (pvNode.Move != principalVariation[cntr++])
+                {
+                    Console.Beep();
+                    print = true;
+                }
+                    
+                pvNode = pvNode.Next;
+            }
+            if (print)
+                Console.WriteLine("-------------------------\r\n" + sb.ToString() + "--------------------------\r\n");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -133,6 +155,8 @@ namespace Lichen.AI
             int previousScore = 0;
             Move bestMove = new Move();
 
+            PvNode node, pvNode = null;
+
 
             
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
@@ -161,6 +185,7 @@ namespace Lichen.AI
                     Move move = moves.Get(i);
                     if (position.IsLegalMove(move, pinnedPiecesBitboard))
                     {
+                        node = new PvNode(move);
                         BoardState previousState = new BoardState(move, position);
                         position.DoMove(move);
 
@@ -171,7 +196,8 @@ namespace Lichen.AI
                                 position,
                                 0 - beta,
                                 0 - alpha,
-                                depth
+                                depth,
+                                node
                             );
                         }
                         else
@@ -189,7 +215,7 @@ namespace Lichen.AI
                                     position,
                                     0 - aspireBeta,
                                     0 - aspireAlpha,
-                                    depth);
+                                    depth,node);
                                 if (score <= aspireAlpha)
                                 {
                                     aspirationAlphaDelta <<= 2;
@@ -210,13 +236,14 @@ namespace Lichen.AI
                         {
                             bestMove = move;
                             alpha = score;
+                            pvNode = node;
                         }
                     }
                 }
                 previousScore = alpha;
                 transpositionTable.AddEntry(position.Zobrist, alpha, NodeType.Exact, depth + 1, bestMove);
                 nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
-                ExtractPrincipalVariation(depth + 1, position);
+                ExtractPrincipalVariation(depth + 1, position, pvNode);
                 OnIterationCompleted(depth, alpha);
             }
             stopwatch.Stop();
@@ -230,6 +257,7 @@ namespace Lichen.AI
             int alpha,
             int beta,
             int depth,
+            PvNode parentPv,
             bool nullMoveAllowed = true
         )
         {
@@ -241,7 +269,7 @@ namespace Lichen.AI
             if (transpositionTable.GetEntry(position.Zobrist, out ttEntry))
             {
                 hashMove = ttEntry.BestMove;
-                if (ttEntry.Depth == depth) // Change this once we get TT stable.
+                if (ttEntry.Depth >= depth) // Change this once we get TT stable.
                 {
                     if (ttEntry.NodeType == NodeType.Exact)
                     {
@@ -298,6 +326,7 @@ namespace Lichen.AI
                 Move move = moves.Get(i);
                 if (position.IsLegalMove(move, pinnedPiecesBitboard))
                 {
+                    PvNode node = new PvNode(move);
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
 
@@ -305,20 +334,21 @@ namespace Lichen.AI
                     if (noMoves)
                     {
                         noMoves = false;
-                        score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1);
+                        score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1, node);
                     }
                     else
                     {
-                        score = -AlphaBeta(position, -1 - alpha, 0 - alpha, depth - 1);
+                        score = -AlphaBeta(position, -1 - alpha, 0 - alpha, depth - 1, node);
                         // If null move search fails, search again with full window.
                         if (score > alpha && score < beta)
-                            score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1);
+                            score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1, node);
                     }
                     position.UndoMove(previousState);
                     if (score >= current)
                     {
                         current = score;
                         bestMove = move;
+                        parentPv.Next = node;
                         if (score >= alpha)
                         {
                             alpha = score;
@@ -354,7 +384,7 @@ namespace Lichen.AI
                 nodeType = NodeType.Exact;
             }
             // Add bound nodes to transposition table.
-            transpositionTable.AddEntry(position.Zobrist, alpha/* TODO: SHould this be current? */, nodeType, depth, bestMove);
+            transpositionTable.AddEntry(position.Zobrist, current/* TODO: SHould this be current? */, nodeType, depth, bestMove);
             return current;
         }
 
