@@ -27,10 +27,42 @@ namespace Lichen.Model
             return moves[index];
         }
 
+        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Sort(int[] values)
+        public void Sort(Move? hashMove, Move k0, Move k1)
         {
-            Array.Sort(values, moves, 0, count);
+            int cntr = 0;
+            if (hashMove != null)
+            {
+                for (int i = cntr; i < count; i++)
+                {
+                    if (moves[i] == hashMove)
+                    {
+                        moves[i] = moves[cntr];
+                        moves[cntr++] = (Move)hashMove;
+                        break;
+                    }
+                }
+            }
+            for (int i = cntr; i < count; i++)
+            {
+                if (moves[i] == k0)
+                {
+                    moves[i] = moves[cntr];
+                    moves[cntr++] = k0;
+                    break;
+                }
+            }
+            for (int i = cntr; i < count; i++)
+            {
+                if (moves[i] == k1)
+                {
+                    moves[i] = moves[cntr];
+                    moves[cntr] = k1;
+                    return;
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

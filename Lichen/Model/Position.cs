@@ -509,6 +509,24 @@ namespace Lichen.Model
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
+        public BoardState DoNullMove()
+        {
+            BoardState bs = new BoardState(new Move(), this);
+            enPassentBitboard = 0;
+            playerToMove = Opponent();
+            zobristHash ^= ZobristHash.WhiteToMoveHash;
+            return bs;
+        }
+
+        public void UndoNullMove(BoardState boardState)
+        {
+            playerToMove = Opponent();
+            zobristHash ^= ZobristHash.WhiteToMoveHash;
+            enPassentBitboard = boardState.EnPassentBitboard;
+        }
+
+        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateCastleRights(ref int originSquare, ref int destinationSquare)
         {

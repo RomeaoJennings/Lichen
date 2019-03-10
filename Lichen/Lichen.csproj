@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\NodeType.cs" />
+    <Compile Include="AI\PvTable.cs" />
     <Compile Include="AI\TableEntry.cs" />
     <Compile Include="AI\TranspositionTable.cs" />
     <Compile Include="Model\Bitboards.cs" />
@@ -81,7 +82,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AI\Evaluate.cs" />
     <Compile Include="AI\SearchCompletedEventArgs.cs" />
-    <Compile Include="AI\PvNode.cs" />
+    <Compile Include="AI\PvTableEntry.cs" />
     <Compile Include="AI\Search.cs" />
     <Compile Include="AI\UciController.cs" />
   </ItemGroup>
