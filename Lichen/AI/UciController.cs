@@ -65,15 +65,15 @@ namespace Lichen.AI
 
         private void DoSearch()
         {
-            Search search = new Search();
+            BaseSearch search = new BaseSearch();
             search.IterationCompleted += SendIterationInfo;
             search.SearchCompleted += BestMove;
-            search.IterativeDeepening(5, position);
+            search.IterativeDeepening(6, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
         {
-            Console.WriteLine($"bestmove {e.PrincipalVariation[0]}");
+            Console.WriteLine($"bestmove {e.PrincipalVariation.Last()}");
         }
 
         private void SendIterationInfo(object sender, SearchCompletedEventArgs e)
@@ -97,15 +97,12 @@ namespace Lichen.AI
             message.Append(e.Nodes);
             message.Append(" nps ");
             message.Append(e.NodesPerSecond);
-            message.Append(" hashfull ");
-            message.Append(e.HashFull);
             message.Append(" pv");
-            int cntr = 0;
-            Move blankMove = new Move();
-            while (cntr < e.PrincipalVariation.Length && e.PrincipalVariation[cntr] != blankMove)
+            int cntr = e.PrincipalVariation.Length - 1;
+            while (cntr > 0)
             {
                 message.Append(" ");
-                message.Append(e.PrincipalVariation[cntr++]);
+                message.Append(e.PrincipalVariation[cntr--]);
             }
             Console.WriteLine(message.ToString());
         }
