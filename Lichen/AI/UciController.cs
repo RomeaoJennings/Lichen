@@ -11,6 +11,7 @@ namespace Lichen.AI
     public class UciController
     {
         private Position position;
+        private readonly BaseSearch search;
 
         const string engineName = "Lichen v. 1.0.0";
         const string author = "Romeao Jennings";
@@ -18,6 +19,10 @@ namespace Lichen.AI
         public UciController()
         {
             position = new Position();
+            search = new BaseSearch();
+            search.IterationCompleted += SendIterationInfo;
+            search.SearchCompleted += BestMove;
+
         }
 
         public void UciMainLoop()
@@ -65,10 +70,8 @@ namespace Lichen.AI
 
         private void DoSearch()
         {
-            BaseSearch search = new BaseSearch();
-            search.IterationCompleted += SendIterationInfo;
-            search.SearchCompleted += BestMove;
-            search.IterativeDeepening(4, position);
+
+            search.IterativeDeepening(7, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
@@ -97,6 +100,8 @@ namespace Lichen.AI
             message.Append(e.Nodes);
             message.Append(" nps ");
             message.Append(e.NodesPerSecond);
+            message.Append(" hashfull ");
+            message.Append(e.HashFull);
             message.Append(" pv");
             int cntr = e.PrincipalVariation.Length - 1;
             while (cntr > 0)

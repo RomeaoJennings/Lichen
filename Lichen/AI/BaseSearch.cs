@@ -101,7 +101,7 @@ namespace Lichen.AI
             if (eventToCall != null)
             {
                 eventToCall(this, new SearchCompletedEventArgs(
-                    ply + 1, score, principalVariation, nodeCounter, nodesPerSecond, 0/*transpositionTable.TableUsage*/));
+                    ply + 1, score, principalVariation, nodeCounter, nodesPerSecond, transpositionTable.TableUsage));
             }
         }
 
@@ -111,6 +111,7 @@ namespace Lichen.AI
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            transpositionTable.NewSearch(); // Increment TT epoch to remove ancient nodes upon collisions with new ones.
             int score;
             nodeCounter = 1;
             int alpha = INITIAL_ALPHA;
@@ -176,6 +177,11 @@ namespace Lichen.AI
         {
             int score;
 
+            if (position.PositionIsThreefoldDraw()) // TODO: Add 50 move draw.
+            {
+                return 0;
+            }
+
             TableEntry ttEntry;
             Move? hashMove = null;
             if (transpositionTable.GetEntry(position.Zobrist, out ttEntry))
@@ -209,10 +215,7 @@ namespace Lichen.AI
 
             nodeCounter++;
 
-            if (position.PositionIsThreefoldDraw())
-            {
-                return 0;
-            }
+
 
             int current = INITIAL_ALPHA;
             bool noMoves = true;

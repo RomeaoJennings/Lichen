@@ -15,7 +15,7 @@ namespace Lichen.AI
         private ulong filledEntries;
         private ushort searchNum;
 
-        public TranspositionTable(ulong numEntries = 10000000) 
+        public TranspositionTable(ulong numEntries = 2000000) 
         {
             entries = new TableEntry[numEntries];
             count = numEntries;
@@ -60,7 +60,7 @@ namespace Lichen.AI
         public int TableUsage {
             get
             {
-                return (int)((filledEntries * 10000UL) / count);
+                return (int)((filledEntries * 1000UL) / count);
             }
         }
 
