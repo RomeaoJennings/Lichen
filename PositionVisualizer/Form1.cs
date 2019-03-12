@@ -13,8 +13,14 @@ namespace UserInterface
     {
         ChessBoardController cbc;
         Position position = new Position();
+        BaseSearch search;
+
         public Form1()
         {
+            search = new BaseSearch();
+            search.IterationCompleted += Search_IterationCompleted;
+            search.SearchCompleted += Search_SearchCompleted;
+
             InitializeComponent();
             cbc = new ChessBoardController(boardView, position);
         }
@@ -37,10 +43,8 @@ namespace UserInterface
 
         private void DoSearch()
         {
-            BaseSearch search = new BaseSearch();
-            search.IterationCompleted += Search_IterationCompleted;
-            search.SearchCompleted += Search_SearchCompleted;
-            search.IterativeDeepening((int)numericUpDown1.Value, position);
+            int ply = (int)numericUpDown1.Value;
+            search.IterativeDeepening(ply, position);
         }
 
         private void Search_SearchCompleted(object sender, SearchCompletedEventArgs e)

@@ -43,6 +43,11 @@ namespace Lichen.AI
             transpositionTable = new TranspositionTable();
         }
 
+        public BaseSearch(TranspositionTable tt)
+        {
+            transpositionTable = tt;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExtractPrincipalVariation(int length, Position position)
@@ -50,11 +55,12 @@ namespace Lichen.AI
             List<Move> pvList = new List<Move>();
             Stack<BoardState> previousPositions = new Stack<BoardState>();
             bool keepGoing = true;
-
+            int cnt = 0;
             // Search through the transposition table for best moves. Each time we find one, do that move, and continue the search.
             do
             {
                 TableEntry ttEntry;
+                cnt++;
                 if (transpositionTable.GetEntry(position.Zobrist, out ttEntry) && ttEntry.BestMove != Move.EmptyMove)
                 {
                     pvList.Add(ttEntry.BestMove);
@@ -66,7 +72,7 @@ namespace Lichen.AI
                     keepGoing = false;
                 }
 
-            } while (keepGoing);
+            } while (keepGoing && cnt < length);
             
             // Unwind moves done from PV.
             while (previousPositions.Count > 0)

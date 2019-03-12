@@ -144,8 +144,9 @@ namespace Lichen.Model
             halfMoveClock = copy.halfMoveClock;
             fullMoveNumber = copy.fullMoveNumber;
             enPassentBitboard = copy.enPassentBitboard;
+            allPiecesBitboard = copy.allPiecesBitboard;
             zobristHash = copy.zobristHash;
-            // Todo: Copy repetition table.
+            threeMoveRepetition = new RepetitionTable(copy.threeMoveRepetition);
         }
 
         public static Position FromFen(string fen)

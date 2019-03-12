@@ -12,6 +12,19 @@ namespace Lichen.Model
     {
         private readonly Dictionary<ulong, byte> dictionary = new Dictionary<ulong, byte>(2056);
         private long cntr = 0;
+
+        public RepetitionTable() { }
+
+        public RepetitionTable(RepetitionTable copy)
+        {
+            cntr = copy.cntr;
+            foreach (var keyValuePair in copy.dictionary)
+            {
+                dictionary.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
+
         public int AddPosition(ulong key)
         {
             cntr++;

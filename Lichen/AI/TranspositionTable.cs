@@ -10,15 +10,19 @@ namespace Lichen.AI
 {
     public class TranspositionTable
     {
-        private TableEntry[] entries;
+        private TableEntry[] replaceDeeper;
+        private TableEntry[] replaceAlways;
+
         private readonly ulong count;
         private ulong filledEntries;
         private ushort searchNum;
 
         public TranspositionTable(ulong numEntries = 2000000) 
         {
-            entries = new TableEntry[numEntries];
-            count = numEntries;
+            numEntries += numEntries % 2; // Ensure an even number.
+            count = numEntries / 2;
+            replaceDeeper = new TableEntry[count];
+            replaceAlways = new TableEntry[count];
             filledEntries = 0;
             searchNum = 0;
         }
@@ -31,24 +35,44 @@ namespace Lichen.AI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool GetEntry(ulong key, out TableEntry entry)
         {
-            entry = entries[key % count];
-            return entry != null && key == entry.Key;
+            ulong index = key % count;
+            entry = replaceDeeper[index];
+            if (entry != null && key == entry.Key)
+            {
+                return true;
+            }
+            entry = replaceAlways[index];
+            if (entry != null && key == entry.Key)
+            {
+                return true;
+            }
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddEntry(TableEntry entry)
         {
             ulong index = entry.Key % count;
-            if (entries[index] == null)
+            entry.SearchNumber = searchNum;
+
+            if (replaceDeeper[index] == null)
+            {
+                filledEntries++;
+                replaceDeeper[index] = entry;
+                return;
+            }
+            // Replace old entries and ones that are shallower than the new entry
+            if (replaceDeeper[index].SearchNumber < searchNum || replaceDeeper[index].Depth < entry.Depth)
+            {
+                replaceDeeper[index] = entry;
+                return;
+            }
+            // If we get here, we are replacing the always replace bucket.
+            if (replaceAlways[index] == null)
             {
                 filledEntries++;
             }
-            else if (entries[index].SearchNumber == searchNum && entries[index].Depth > entry.Depth) // If existing entry with higher depth from same search, do not replace.
-            {
-                return;
-            }
-            entry.SearchNumber = searchNum;
-            entries[index] = entry;
+            replaceAlways[index] = entry;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,13 +84,14 @@ namespace Lichen.AI
         public int TableUsage {
             get
             {
-                return (int)((filledEntries * 1000UL) / count);
+                return (int)((filledEntries * 500UL) / count);
             }
         }
 
         public void Clear()
         {
-            entries = new TableEntry[count];
+            replaceDeeper = new TableEntry[count];
+            replaceAlways = new TableEntry[count];
             filledEntries = 0;
             searchNum = 0;
         }        
