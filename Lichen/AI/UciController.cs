@@ -68,7 +68,7 @@ namespace Lichen.AI
             BaseSearch search = new BaseSearch();
             search.IterationCompleted += SendIterationInfo;
             search.SearchCompleted += BestMove;
-            search.IterativeDeepening(6, position);
+            search.IterativeDeepening(4, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)

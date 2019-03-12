@@ -20,6 +20,8 @@ namespace Lichen.Model
 
         private readonly int move;
 
+        public static readonly Move EmptyMove = new Move();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int OriginSquare()
         {
