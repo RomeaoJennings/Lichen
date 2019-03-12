@@ -60,10 +60,10 @@ namespace UserInterface
             StringBuilder sb = new StringBuilder();
             sb.Append($"Ply: {e.Ply}\t");
             sb.Append($"Val: {e.Score}\t");
-            for (int i=e.PrincipalVariation.Length - 1; i > 0; i--)
+            foreach (Move move in e.PrincipalVariation)
             {
                 sb.Append("  ");
-                sb.Append(e.PrincipalVariation[i]);
+                sb.Append(move);
             }
             Invoke(new UpdatePvDelegate(AddPv), sb.ToString());
         }

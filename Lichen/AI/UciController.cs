@@ -71,12 +71,12 @@ namespace Lichen.AI
         private void DoSearch()
         {
 
-            search.IterativeDeepening(7, position);
+            search.IterativeDeepening(6, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
         {
-            Console.WriteLine($"bestmove {e.PrincipalVariation.Last()}");
+            Console.WriteLine($"bestmove {e.PrincipalVariation[0]}");
         }
 
         private void SendIterationInfo(object sender, SearchCompletedEventArgs e)
@@ -103,11 +103,10 @@ namespace Lichen.AI
             message.Append(" hashfull ");
             message.Append(e.HashFull);
             message.Append(" pv");
-            int cntr = e.PrincipalVariation.Length - 1;
-            while (cntr > 0)
+            foreach (Move move in e.PrincipalVariation)
             {
                 message.Append(" ");
-                message.Append(e.PrincipalVariation[cntr--]);
+                message.Append(move);
             }
             Console.WriteLine(message.ToString());
         }

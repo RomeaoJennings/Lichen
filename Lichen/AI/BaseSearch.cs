@@ -24,7 +24,7 @@ namespace Lichen.AI
         private Move[] principalVariation;
         private int[,,] killerCounts;
         private Move[,] killerMoves;
-        private TranspositionTable transpositionTable;
+        private readonly TranspositionTable transpositionTable;
 
 
         public long Nodes { get { return nodeCounter; } }
@@ -45,17 +45,35 @@ namespace Lichen.AI
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ExtractPrincipalVariation(int length, PvNode pvNode)
+        private void ExtractPrincipalVariation(int length, Position position)
         {
-            principalVariation = new Move[length+1];
-            int cntr = length;
-            while (pvNode != null)
+            List<Move> pvList = new List<Move>();
+            Stack<BoardState> previousPositions = new Stack<BoardState>();
+            bool keepGoing = true;
+
+            // Search through the transposition table for best moves. Each time we find one, do that move, and continue the search.
+            do
             {
-                
-                principalVariation[cntr] = pvNode.Move;
-                cntr--;
-                pvNode = pvNode.Next;
+                TableEntry ttEntry;
+                if (transpositionTable.GetEntry(position.Zobrist, out ttEntry) && ttEntry.BestMove != Move.EmptyMove)
+                {
+                    pvList.Add(ttEntry.BestMove);
+                    previousPositions.Push(new BoardState(ttEntry.BestMove, position));
+                    position.DoMove(ttEntry.BestMove);
+                }
+                else
+                {
+                    keepGoing = false;
+                }
+
+            } while (keepGoing);
+            
+            // Unwind moves done from PV.
+            while (previousPositions.Count > 0)
+            {
+                position.UndoMove(previousPositions.Pop());
             }
+            principalVariation = pvList.ToArray();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -116,8 +134,6 @@ namespace Lichen.AI
             nodeCounter = 1;
             int alpha = INITIAL_ALPHA;
             Move bestMove = new Move();
-
-            PvNode node, pvNode = null;
             
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
             MoveList moves = position.GetAllMoves();
@@ -131,8 +147,11 @@ namespace Lichen.AI
                 alpha = INITIAL_ALPHA;
 
                 Move? hashMove = null;
-                if (depth > 0)
-                    hashMove = principalVariation[depth];
+                TableEntry ttEntry;
+                if (transpositionTable.GetEntry(position.Zobrist, out ttEntry) && ttEntry.BestMove != Move.EmptyMove)
+                {
+                    hashMove = ttEntry.BestMove;
+                }
 
                 moves.Sort(hashMove, killerMoves[0, 0], killerMoves[0, 1]); // TODO: Killer moves are null here.  Change this...
                 for (int i = 0; i < moveCount; i++)
@@ -140,11 +159,10 @@ namespace Lichen.AI
                     Move move = moves.Get(i);
                     if (position.IsLegalMove(move, pinnedPiecesBitboard))
                     {
-                        node = new PvNode(move);
                         BoardState previousState = new BoardState(move, position);
                         position.DoMove(move);
 
-                        score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth, node);
+                        score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth);
 
 
                         position.UndoMove(previousState);
@@ -152,12 +170,12 @@ namespace Lichen.AI
                         {
                             bestMove = move;
                             alpha = score;
-                            pvNode = node;
                         }
                     }
                 }
+                transpositionTable.AddEntry(position.Zobrist, alpha, NodeType.Exact, depth + 1, bestMove);
                 nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
-                ExtractPrincipalVariation(depth + 1, pvNode);
+                ExtractPrincipalVariation(depth + 1, position);
                 OnIterationCompleted(depth, alpha);
             }
             stopwatch.Stop();
@@ -171,7 +189,6 @@ namespace Lichen.AI
             int alpha,
             int beta,
             int depth,
-            PvNode parentPv,
             bool nullMoveAllowed = true
         )
         {
@@ -231,11 +248,10 @@ namespace Lichen.AI
                 if (position.IsLegalMove(move, pinnedPiecesBitboard))
                 {
                     noMoves = false;
-                    PvNode node = new PvNode(move);
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
 
-                    score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1, node);
+                    score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1);
                     position.UndoMove(previousState);
                     if (score > current)
                     {
@@ -243,7 +259,6 @@ namespace Lichen.AI
                         if (score > alpha)
                         {
                             alpha = score;
-                            parentPv.Next = node;
                             ttEntry.NodeType = NodeType.Exact;
                             ttEntry.BestMove = move;
                         }
