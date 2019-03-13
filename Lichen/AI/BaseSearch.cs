@@ -198,17 +198,27 @@ namespace Lichen.AI
                 }
             }
 
-            if (depth == 0)
+            if (depth <= 0)
             {
-                return Quiesce(position, alpha, beta, depth);
+                return Quiesce(position, alpha, beta, 0);
             }
 
             nodeCounter++;
-
-
-
             int current = INITIAL_ALPHA;
             bool noMoves = true;
+
+            //Null Move Heuristic
+            if (nullMoveAllowed && position.GetCheckersBitboard() == 0)
+            {
+                BoardState prevPosition = position.DoNullMove();
+                score = -AlphaBeta(position, -beta, -beta + 1, depth - 3, false);
+                position.UndoNullMove(prevPosition);
+                if (score >= beta)
+                {
+                    return beta;
+                }
+            }
+
             MoveList moves = position.GetAllMoves();
             int moveCount = moves.Count;
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
