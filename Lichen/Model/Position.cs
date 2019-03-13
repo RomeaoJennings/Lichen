@@ -525,6 +525,7 @@ namespace Lichen.Model
             playerToMove = Opponent();
             zobristHash ^= ZobristHash.WhiteToMoveHash;
             enPassentBitboard = boardState.EnPassentBitboard;
+            castleRights = boardState.CastleRights;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -566,7 +567,7 @@ namespace Lichen.Model
                     castleRights.BlackKing,
                     castleRights.BlackQueen);
             }
-            else if (originSquare == E8)
+            if (originSquare == E8)
             {
                 if (castleRights.BlackKing)
                 {
