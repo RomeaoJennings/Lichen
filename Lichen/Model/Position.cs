@@ -115,7 +115,7 @@ namespace Lichen.Model
         public int FullMoveNumber { get { return fullMoveNumber; } }
         public Bitboard EnPassentBitboard { get { return enPassentBitboard; } }
         public CastleRights CastleRights { get { return castleRights; } }
-        public ulong Zobrist {  get { return zobristHash; } }
+        public ulong Zobrist { get { return zobristHash; } }
         public Bitboard AllPiecesBitboard { get { return allPiecesBitboard; } }
 
         public bool InCheck
@@ -228,8 +228,6 @@ namespace Lichen.Model
             }
         }
 
-
-
         private void NewGame()
         {
             playerToMove = WHITE;
@@ -321,7 +319,7 @@ namespace Lichen.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
         {
-            
+
             halfMoveClock++;
 
             int opponent = Opponent();
@@ -363,7 +361,7 @@ namespace Lichen.Model
                 squares[originSquare] = EMPTY;
                 pieces[playerToMove][movedPiece] ^= originSquareBitboard;
                 pieces[playerToMove][ALL_PIECES] ^= originSquareBitboard;
-                
+
 
                 // Update Destination Square
                 squares[destinationSquare] = movedPiece;
@@ -471,7 +469,7 @@ namespace Lichen.Model
             else
             {
                 int movedPiece = move.MovedPiece();
-     
+
                 Bitboard destinationSquareBitboard = Bitboards.SquareBitboards[destinationSquare];
                 Bitboard originSquareBitboard = Bitboards.SquareBitboards[originSquare];
 
@@ -503,13 +501,13 @@ namespace Lichen.Model
                 }
                 // Swap promotion piece for pawn when promotion occurs
                 if (promotionType != EMPTY)
-                {                    
+                {
                     pieces[playerToMove][promotionType] ^= destinationSquareBitboard;
                     pieces[playerToMove][PAWN] ^= destinationSquareBitboard;
                     squares[originSquare] = PAWN;
                 }
             }
-            
+
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
@@ -528,8 +526,6 @@ namespace Lichen.Model
             zobristHash ^= ZobristHash.WhiteToMoveHash;
             enPassentBitboard = boardState.EnPassentBitboard;
         }
-
-        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateCastleRights(ref int originSquare, ref int destinationSquare)
@@ -634,7 +630,7 @@ namespace Lichen.Model
             GetAllSlidingPieceMoves(list, BISHOP, playerToMove, destinationBitboard);
             GetAllSlidingPieceMoves(list, ROOK, playerToMove, destinationBitboard);
             GetAllSlidingPieceMoves(list, QUEEN, playerToMove, destinationBitboard);
-            GetAllPawnPushMoves(list, playerToMove, destinationBitboard);  
+            GetAllPawnPushMoves(list, playerToMove, destinationBitboard);
 
             // No need to get King moves for evasions, because they are 
             // already generated before call to GetMoves
@@ -664,7 +660,7 @@ namespace Lichen.Model
                 Bitboards.PopLsb(ref sliders);
                 slideAttacksBitboard |= Bitboards.LineBitboards[kingSquare, sliderSquare];
             }
-            Bitboard kingMovesBitboard = Bitboards.KingBitboards[kingSquare] 
+            Bitboard kingMovesBitboard = Bitboards.KingBitboards[kingSquare]
                 & ((~pieces[playerToMove][ALL_PIECES] & ~slideAttacksBitboard) // Not own pieces or attacked
                 | checkersBitboard); // Include adjacent sliders
             GenerateMovesFromBitboard(list, kingMovesBitboard, kingSquare);
@@ -673,7 +669,7 @@ namespace Lichen.Model
             if (notDoubleCheck)
             {
                 int attackerSquare = checkersBitboard.BitScanForward();
-                Bitboard destinationBitboard = Bitboards.SquareBitboards[attackerSquare] 
+                Bitboard destinationBitboard = Bitboards.SquareBitboards[attackerSquare]
                     | Bitboards.BetweenBitboards[attackerSquare, kingSquare];
                 GetMoves(MoveType.Evasions, list, destinationBitboard);
             }
@@ -754,8 +750,8 @@ namespace Lichen.Model
             int square,
             Bitboard destinationBitboard)
         {
-            
-            Bitboard attacks = GetSlidingPieceBitboard(square,pieceType) & destinationBitboard;
+
+            Bitboard attacks = GetSlidingPieceBitboard(square, pieceType) & destinationBitboard;
             GenerateMovesFromBitboard(list, attacks, square);
         }
 
@@ -977,14 +973,14 @@ namespace Lichen.Model
             Bitboard sliders = (pieces[opponent][QUEEN] | pieces[opponent][ROOK]) &
                 (Bitboards.RowBitboards[kingSquare] | Bitboards.ColumnBitboards[kingSquare]);
             sliders |= (pieces[opponent][QUEEN] | pieces[opponent][BISHOP]) &
-                (Bitboards.DiagonalBitboards[Bitboards.FORWARD,kingSquare] | 
-                Bitboards.DiagonalBitboards[Bitboards.BACKWARD,kingSquare]);
+                (Bitboards.DiagonalBitboards[Bitboards.FORWARD, kingSquare] |
+                Bitboards.DiagonalBitboards[Bitboards.BACKWARD, kingSquare]);
             while (sliders != 0)
             {
                 int sliderSquare = sliders.BitScanForward();
                 Bitboards.PopLsb(ref sliders);
                 Bitboard betweenBitboard = Bitboards.BetweenBitboards[kingSquare, sliderSquare] & allPiecesBitboard;
-                
+
                 // If exactly one piece between slider and king, it is pinned.
                 if (betweenBitboard != 0)
                 {
@@ -1006,7 +1002,7 @@ namespace Lichen.Model
             int opponent = Opponent();
             int originSquare = move.OriginSquare();
             int destinationSquare = move.DestinationSquare();
-            
+
             if (originSquare == kingSquare)
             {
                 // If king move, it's legal if it is a castle move or if the destination is not attacked.
@@ -1015,12 +1011,12 @@ namespace Lichen.Model
             else if (move.IsEnPassent())
             {
                 Bitboard capSqBB = Bitboards.SquareBitboards[destinationSquare + Bitboards.EnPassentOffset[playerToMove]];
-                Bitboard occupied = allPiecesBitboard 
-                    ^ capSqBB ^ Bitboards.SquareBitboards[originSquare] 
+                Bitboard occupied = allPiecesBitboard
+                    ^ capSqBB ^ Bitboards.SquareBitboards[originSquare]
                     ^ Bitboards.SquareBitboards[destinationSquare];
-                return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) & 
+                return (Bitboards.GetRookMoveBitboard(kingSquare, occupied) &
                     (pieces[opponent][QUEEN] | pieces[opponent][ROOK])) == 0 &&
-                       (Bitboards.GetBishopMoveBitboard(kingSquare, occupied) & 
+                       (Bitboards.GetBishopMoveBitboard(kingSquare, occupied) &
                        (pieces[opponent][QUEEN] | pieces[opponent][BISHOP])) == 0;
             }
             else
@@ -1167,7 +1163,7 @@ namespace Lichen.Model
             {
                 sb.Append(blankSquareCntr);
                 blankSquareCntr = 0;
-            }   
+            }
         }
 
         public string Print()
@@ -1203,6 +1199,77 @@ namespace Lichen.Model
                 }
             }
             return result.ToString();
+        }
+
+        public void Perft(int depth)
+        {
+            Debug.Assert(depth >= 1);
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ulong pinned = GetPinnedPiecesBitboard();
+            var moves = GetAllMoves();
+            int mvCnt = moves.Count;
+            ulong total = 0;
+            if (depth == 1)
+            {
+                int cnt = 0;
+
+                for (int i = 0; i < mvCnt; i++)
+                {
+                    var move = moves.Get(i);
+                    if (IsLegalMove(move, pinned))
+                    {
+                        Console.WriteLine(move);
+                        cnt++;
+                    }
+                }
+                Console.WriteLine($"Total Moves: {cnt}");
+                return;
+            }
+            for (int i = 0; i < mvCnt; i++)
+            {
+                var move = moves.Get(i);
+                ulong nodes = 0;
+                BoardState bs = new BoardState(move, this);
+                DoMove(move);
+                PerftCountNodes(depth - 1, ref nodes);
+                Console.WriteLine($"Move: {move}: {nodes}");
+                total += nodes;
+                UndoMove(bs);
+            }
+            sw.Stop();
+
+            Console.WriteLine($"Total Nodes: {total}");
+            Console.WriteLine($"Elapsed Time: {sw.Elapsed}");
+            Console.WriteLine($"Nodes Per Second: {(total / (ulong)sw.ElapsedMilliseconds) * 1000  }");
+        }
+
+        private void PerftCountNodes(int depth, ref ulong nodes)
+        {
+            var moves = GetAllMoves();
+            int mvCnt = moves.Count;
+            Bitboard pinned = GetPinnedPiecesBitboard();
+            if (depth == 1)
+            {
+               
+                for (int i = 0; i < mvCnt; i++)
+                    if (IsLegalMove(moves.Get(i), pinned))
+                        nodes++;
+            }
+            else
+            {
+                for (int i = 0; i < mvCnt; i++)
+                {
+                    var move = moves.Get(i);
+                    if (IsLegalMove(move, pinned))
+                    {
+                        BoardState bs = new BoardState(move, this);
+                        DoMove(move);
+                        PerftCountNodes(depth - 1, ref nodes);
+                        UndoMove(bs);
+                    }
+                }
+            }
         }
     }
 }

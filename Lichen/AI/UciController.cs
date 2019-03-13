@@ -47,6 +47,18 @@ namespace Lichen.AI
                         DisplayPosition(position);
                         break;
                     case "go":
+                        if (elements[1] == "perft")
+                        {
+                            if (elements.Length > 2)
+                            {
+                                GoPerft(elements[2]);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Bad Perft command.  Must provide depth.");
+                            }
+                            break;
+                        }
                         DoSearch();
                         break;
                     case "isready":
@@ -62,6 +74,18 @@ namespace Lichen.AI
             } while (!quit);
         }
 
+        private void GoPerft(string depthStr)
+        {
+            int depth;
+            if (int.TryParse(depthStr, out depth) && depth > 0)
+            {
+                position.Perft(depth);
+            }
+            else
+            {
+                Console.WriteLine("Invalid Perft depth.");
+            }
+        }
 
         private void IsReady()
         {
