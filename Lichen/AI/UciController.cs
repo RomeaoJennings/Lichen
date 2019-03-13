@@ -71,7 +71,7 @@ namespace Lichen.AI
         private void DoSearch()
         {
 
-            search.IterativeDeepening(7, position);
+            search.IterativeDeepening(6, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)
@@ -85,17 +85,10 @@ namespace Lichen.AI
             message.Append("info depth ");
             message.Append(e.Ply);
             message.Append(" score ");
-            int absScore = Math.Abs(e.Score);
-            if (absScore > 40000)
-            {
-                message.Append("mate ");
-                message.Append(50000 - absScore);
-            }
-            else
-            {
-                message.Append("cp ");
-                message.Append(e.Score);
-            }
+
+            message.Append("cp ");
+            message.Append(e.Score);
+
             message.Append(" nodes ");
             message.Append(e.Nodes);
             message.Append(" nps ");

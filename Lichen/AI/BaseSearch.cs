@@ -11,7 +11,7 @@ namespace Lichen.AI
 {
     using Bitboard = UInt64;
 
-    public class BaseSearch
+    public class BaseSearch : IComparer<Move>
     {
         public const int INITIAL_ALPHA = -10000000;
         public const int INITIAL_BETA = 10000000;
@@ -24,6 +24,7 @@ namespace Lichen.AI
         private Move[] principalVariation;
         private int[,,] killerCounts;
         private Move[,] killerMoves;
+        private int[,] historyCounts;
         private readonly TranspositionTable transpositionTable;
 
 
@@ -149,6 +150,8 @@ namespace Lichen.AI
             {
                 killerCounts = new int[maxPly, 64, 64];
                 killerMoves = new Move[maxPly, NUMBER_OF_KILLERS];
+                historyCounts = new int[6, 64];
+
                 int beta = INITIAL_BETA;
                 alpha = INITIAL_ALPHA;
 
@@ -253,12 +256,14 @@ namespace Lichen.AI
                 Move move = moves.Get(i);
                 if (position.IsLegalMove(move, pinnedPiecesBitboard))
                 {
-                    noMoves = false;
+                    
                     BoardState previousState = new BoardState(move, position);
                     position.DoMove(move);
 
-                    score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth - 1);
+                    score = -AlphaBeta(position,  -beta, -alpha, depth - 1);
+                    
                     position.UndoMove(previousState);
+                    noMoves = false;
                     if (score > current)
                     {
                         current = score;
@@ -273,6 +278,7 @@ namespace Lichen.AI
                             ttEntry.NodeType = NodeType.LowerBound;
                             if (move.CapturePiece() == Position.EMPTY)
                             {
+                                historyCounts[position.GetPieceSquares()[move.OriginSquare()], move.DestinationSquare()] += (1 << depth);
                                 UpdateKillerMoves(move, depth);
                             }
                             break;
@@ -380,6 +386,11 @@ namespace Lichen.AI
             {
                 killerMoves[depth, 1] = move;
             }
+        }
+
+        public int Compare(Move x, Move y)
+        {
+            throw new NotImplementedException();
         }
     }
 }
