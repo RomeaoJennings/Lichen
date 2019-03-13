@@ -57,9 +57,11 @@ namespace Lichen.AI
                             {
                                 Console.WriteLine("Bad Perft command.  Must provide depth.");
                             }
-                            break;
                         }
-                        DoSearch();
+                        else
+                        {
+                            DoSearch(elements);
+                        }
                         break;
                     case "isready":
                         IsReady();
@@ -92,9 +94,17 @@ namespace Lichen.AI
             Console.WriteLine("readyok");
         }
 
-        private void DoSearch()
+        private void DoSearch(string[] elements)
         {
-            search.IterativeDeepening(9, position);
+            int maxPly;
+            if (elements.Length > 2 && elements[1] == "depth" && int.TryParse(elements[2], out maxPly) && maxPly > 0)
+            {
+                search.IterativeDeepening(maxPly, position);
+            }
+            else
+            {
+                search.IterativeDeepening(9, position);
+            }
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)

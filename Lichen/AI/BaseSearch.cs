@@ -362,6 +362,7 @@ namespace Lichen.AI
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Compare(Move x, Move y)
         {
             int xCapture = x.CapturePiece();
