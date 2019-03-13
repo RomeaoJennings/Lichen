@@ -85,7 +85,6 @@
     <Compile Include="AI\Evaluate.cs" />
     <Compile Include="AI\SearchCompletedEventArgs.cs" />
     <Compile Include="AI\PvTableEntry.cs" />
-    <Compile Include="AI\Search.cs" />
     <Compile Include="AI\UciController.cs" />
   </ItemGroup>
   <ItemGroup>

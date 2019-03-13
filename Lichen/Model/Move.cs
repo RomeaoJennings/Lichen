@@ -17,10 +17,13 @@ namespace Lichen.Model
         public const int EP_MASK = 0x40000;
         public const int CASTLE_MASK = 0x80000;
         public const int CASTLE_DIR_MASK = 0x100000;
+        public const int MOVED_PIECE_SHIFT = 21;
+        public const int MOVED_PIECE_MASK = 0xE00000;
+
+        public static readonly Move EmptyMove = new Move();
 
         private readonly int move;
 
-        public static readonly Move EmptyMove = new Move();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int OriginSquare()
@@ -32,6 +35,12 @@ namespace Lichen.Model
         public int DestinationSquare()
         {
             return (move & DEST_MASK) >> DEST_SHIFT;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int MovedPiece()
+        {
+            return (move & MOVED_PIECE_MASK) >> MOVED_PIECE_SHIFT;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,9 +74,11 @@ namespace Lichen.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Move(int origin, int destination, int capture = Position.EMPTY, int promotionType = Position.EMPTY)
+        public Move(int origin, int destination, int movedPiece, int capture = Position.EMPTY, int promotionType = Position.EMPTY)
         {
-            move = promotionType << 3;
+            move = movedPiece << 6; // Three bits for piece and three to skip EP, and Castle, and CastleDir bits
+            move |= promotionType;
+            move <<= 3;
             move |= capture;
             move <<= 6;
             move |= destination;
@@ -77,7 +88,7 @@ namespace Lichen.Model
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Move(int origin, int destination, bool enPassent, bool castle, int castleDirection = 0)
+        public Move(int origin, int destination, int movedPiece, bool enPassent, bool castle, int castleDirection = 0)
         {
             // Must be castle or enPassent
             Debug.Assert(enPassent != castle);
@@ -93,7 +104,7 @@ namespace Lichen.Model
                 move |= CASTLE_MASK;
                 move |= (castleDirection << 20);
             }
-
+            move |= (movedPiece << MOVED_PIECE_SHIFT);
             
         }
 
@@ -111,7 +122,7 @@ namespace Lichen.Model
             if (movedPiece == Position.KING && Bitboards.SquareDistance[originSquare, destinationSquare] > 1)
             {
                 int castleDirection = Bitboards.GetColumn(destinationSquare) == 6 ? Position.KING : Position.QUEEN;
-                return new Move(originSquare, destinationSquare, false, true, castleDirection);
+                return new Move(originSquare, destinationSquare, movedPiece, false, true, castleDirection);
             }
             // En Passent and Promotion
             if (movedPiece == Position.PAWN)
@@ -120,17 +131,17 @@ namespace Lichen.Model
                 if (Bitboards.GetColumn(originSquare) != Bitboards.GetColumn(destinationSquare) &&
                     capturePiece == Position.EMPTY)
                 {
-                    return new Move(originSquare, destinationSquare, true, false);
+                    return new Move(originSquare, destinationSquare, movedPiece, true, false);
                 }
                 else if (move.Length > 4)
                 {
                     const string promotionMap = "-qrbn";
                     int promotionPiece = promotionMap.IndexOf(move[4]);
-                    return new Move(originSquare, destinationSquare, capturePiece, promotionPiece);
+                    return new Move(originSquare, destinationSquare, movedPiece, capturePiece, promotionPiece);
                 }
             }
             // Everything else
-            return new Move(originSquare, destinationSquare, capturePiece);
+            return new Move(originSquare, destinationSquare, movedPiece, capturePiece);
         }
 
         public static bool operator ==(Move m1, Move m2)

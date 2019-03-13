@@ -321,6 +321,7 @@ namespace Lichen.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
         {
+            
             halfMoveClock++;
 
             int opponent = Opponent();
@@ -328,6 +329,8 @@ namespace Lichen.Model
             int destinationSquare = move.DestinationSquare();
             int promotionType = move.PromotionType();
             int capturePiece = move.CapturePiece();
+
+            Debug.Assert(move.MovedPiece() == squares[originSquare]);
 
             // Reset En Passent Bitboard, If Currently Set
             if (enPassentBitboard != 0)
@@ -352,7 +355,7 @@ namespace Lichen.Model
             }
             else // Handle non-castle moves, including promotions and en passent
             {
-                int movedPiece = squares[originSquare];
+                int movedPiece = move.MovedPiece();
                 Bitboard originSquareBitboard = Bitboards.SquareBitboards[originSquare];
                 Bitboard destinationSquareBitboard = Bitboards.SquareBitboards[destinationSquare];
 
@@ -467,7 +470,7 @@ namespace Lichen.Model
             }
             else
             {
-                int movedPiece = squares[destinationSquare];
+                int movedPiece = move.MovedPiece();
      
                 Bitboard destinationSquareBitboard = Bitboards.SquareBitboards[destinationSquare];
                 Bitboard originSquareBitboard = Bitboards.SquareBitboards[originSquare];
@@ -501,8 +504,8 @@ namespace Lichen.Model
                 // Swap promotion piece for pawn when promotion occurs
                 if (promotionType != EMPTY)
                 {                    
-                    pieces[playerToMove][promotionType] ^= originSquareBitboard;
-                    pieces[playerToMove][PAWN] ^= originSquareBitboard;
+                    pieces[playerToMove][promotionType] ^= destinationSquareBitboard;
+                    pieces[playerToMove][PAWN] ^= destinationSquareBitboard;
                     squares[originSquare] = PAWN;
                 }
             }
@@ -686,7 +689,7 @@ namespace Lichen.Model
             {
                 int destinationSquare = attacks.BitScanForward();
                 Bitboards.PopLsb(ref attacks);
-                list.Add(new Move(originSquare, destinationSquare, squares[destinationSquare]));
+                list.Add(new Move(originSquare, destinationSquare, squares[originSquare], squares[destinationSquare]));
             }
         }
 
@@ -767,7 +770,7 @@ namespace Lichen.Model
                     AttackersTo(F1, BLACK) == 0 &&
                     AttackersTo(G1, BLACK) == 0)
                 {
-                    list.Add(new Move(E1, G1, false, true, KING));
+                    list.Add(new Move(E1, G1, KING, false, true, KING));
                 }
                 if (castleRights.WhiteQueen &&
                     (allPiecesBitboard & 0x70UL) == 0 &&
@@ -775,7 +778,7 @@ namespace Lichen.Model
                     AttackersTo(D1, BLACK) == 0 &&
                     AttackersTo(C1, BLACK) == 0)
                 {
-                    list.Add(new Move(E1, C1, false, true, QUEEN));
+                    list.Add(new Move(E1, C1, KING, false, true, QUEEN));
                 }
             }
             else
@@ -786,7 +789,7 @@ namespace Lichen.Model
                     AttackersTo(F8, WHITE) == 0 &&
                     AttackersTo(G8, WHITE) == 0)
                 {
-                    list.Add(new Move(E8, G8, false, true, KING));
+                    list.Add(new Move(E8, G8, KING, false, true, KING));
                 }
                 if (castleRights.BlackQueen &&
                     (allPiecesBitboard & 0x7000000000000000UL) == 0 &&
@@ -794,7 +797,7 @@ namespace Lichen.Model
                     AttackersTo(D8, WHITE) == 0 &&
                     AttackersTo(C8, WHITE) == 0)
                 {
-                    list.Add(new Move(E8, C8, false, true, QUEEN));
+                    list.Add(new Move(E8, C8, KING, false, true, QUEEN));
                 }
             }
         }
@@ -850,11 +853,11 @@ namespace Lichen.Model
                 int enPassentSquare = enPassentBitboard.BitScanForward();
                 if ((leftAttacks & enPassentBitboard) != 0)
                 {
-                    list.Add(new Move(enPassentSquare + leftOffset, enPassentSquare, true, false));
+                    list.Add(new Move(enPassentSquare + leftOffset, enPassentSquare, PAWN, true, false));
                 }
                 if ((rightAttacks & enPassentBitboard) != 0)
                 {
-                    list.Add(new Move(enPassentSquare + rightOffset, enPassentSquare, true, false));
+                    list.Add(new Move(enPassentSquare + rightOffset, enPassentSquare, PAWN, true, false));
                 }
             }
             leftAttacks &= opponentPieces;
@@ -944,10 +947,10 @@ namespace Lichen.Model
             int destinationSquare)
         {
             int capturedPiece = squares[destinationSquare];
-            list.Add(new Move(originSquare, destinationSquare, capturedPiece, QUEEN));
-            list.Add(new Move(originSquare, destinationSquare, capturedPiece, ROOK));
-            list.Add(new Move(originSquare, destinationSquare, capturedPiece, BISHOP));
-            list.Add(new Move(originSquare, destinationSquare, capturedPiece, KNIGHT));
+            list.Add(new Move(originSquare, destinationSquare, PAWN, capturedPiece, QUEEN));
+            list.Add(new Move(originSquare, destinationSquare, PAWN, capturedPiece, ROOK));
+            list.Add(new Move(originSquare, destinationSquare, PAWN, capturedPiece, BISHOP));
+            list.Add(new Move(originSquare, destinationSquare, PAWN, capturedPiece, KNIGHT));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -961,7 +964,7 @@ namespace Lichen.Model
                 int destinationSquare = destinationsBitboard.BitScanForward();
                 Bitboards.PopLsb(ref destinationsBitboard);
 
-                list.Add(new Move(destinationSquare + originOffset, destinationSquare, squares[destinationSquare]));
+                list.Add(new Move(destinationSquare + originOffset, destinationSquare, PAWN, squares[destinationSquare]));
             }
         }
 
@@ -1063,7 +1066,7 @@ namespace Lichen.Model
             int originSquare = move.OriginSquare();
             int destinationSquare = move.DestinationSquare();
             Bitboard originBitboard = Bitboards.SquareBitboards[originSquare];
-            int attkPiece = squares[originSquare];
+            int attkPiece = move.MovedPiece();
             int target = squares[destinationSquare];
             Bitboard attacks = AttackersTo(destinationSquare, WHITE) | AttackersTo(destinationSquare, BLACK);
             gain[depth] = pieceValues[target];

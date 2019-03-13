@@ -70,7 +70,7 @@ namespace UserInterface
                     {
                         PromotionDialog pd = new PromotionDialog();
                         pd.ShowDialog();
-                        model.DoMove(new Move(mv.OriginSquare(), mv.DestinationSquare(), mv.CapturePiece(), pd.PromotionType));
+                        model.DoMove(new Move(mv.OriginSquare(), mv.DestinationSquare(), Position.PAWN, mv.CapturePiece(), pd.PromotionType));
                     }
                     else
                     {

@@ -13,7 +13,7 @@ namespace Perft
         static void Main(string[] args)
         {
             Position board = new Position();
-            Perft(board, 7);
+            Perft(board, 6);
         }
 
         static void Perft(Position board, int depth)

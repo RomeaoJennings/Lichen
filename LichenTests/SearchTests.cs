@@ -13,7 +13,7 @@ namespace LichenTests
             [TestMethod]
             public void TestMethod1()
             {
-                Search search = new Search();
+                BaseSearch search = new BaseSearch();
                 var bestMove = search.IterativeDeepening(1, new Lichen.Model.Position());
             }
         }
