@@ -84,42 +84,6 @@ namespace Lichen.AI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int[] GetMoveScores(MoveList moves, Move? hashMove, Position position, int depth)
-        {
-            int[] values = { 0, 900, 500, 350, 325, 100 };
-            int count = moves.Count;
-            int[] result = new int[count];
-            int[] squares = position.GetPieceSquares();
-            for (int i = 0; i < count; i++)
-            {
-                Move move = moves.Get(i);
-                int capturePiece = move.CapturePiece();
-                if (hashMove != null && move == hashMove)
-                {
-                    result[i] = -10000;
-                }
-                else if (move == killerMoves[depth, 0])
-                {
-                    result[i] = -9999;
-                }
-                else if (move == killerMoves[depth, 1])
-                {
-                    result[i] = -9998;
-                }
-                else if (capturePiece != Position.EMPTY)
-                {
-                    result[i] = values[squares[move.OriginSquare()]] - values[capturePiece];
-                }
-                else
-                {
-                    result[i] = -squares[move.OriginSquare()];
-                }
-            }
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void OnIterationCompleted(int ply, int score, bool searchComplete = false)
         {
             EventHandler<SearchCompletedEventArgs> eventToCall = searchComplete ? SearchCompleted : IterationCompleted;
@@ -162,7 +126,7 @@ namespace Lichen.AI
                     hashMove = ttEntry.BestMove;
                 }
 
-                moves.Sort(hashMove, killerMoves[0, 0], killerMoves[0, 1]); // TODO: Killer moves are null here.  Change this...
+                moves.Sort(this, hashMove, null, null);
                 for (int i = 0; i < moveCount; i++)
                 {
                     Move move = moves.Get(i);
@@ -249,7 +213,7 @@ namespace Lichen.AI
             int moveCount = moves.Count;
             Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
 
-            moves.Sort(hashMove/*principalVariation[depth-1]*/, killerMoves[depth, 0], killerMoves[depth, 1]);
+            moves.Sort(this, hashMove, killerMoves[depth, 0], killerMoves[depth, 1]);
             ttEntry = new TableEntry(position.Zobrist,depth);
             for (int i = 0; i < moveCount; i++)
             {
@@ -390,7 +354,39 @@ namespace Lichen.AI
 
         public int Compare(Move x, Move y)
         {
-            throw new NotImplementedException();
+            int xCapture = x.CapturePiece();
+            int yCapture = y.CapturePiece();
+
+            if (xCapture == Position.EMPTY)
+            {
+                if (yCapture != Position.EMPTY)
+                {
+                    return 1;
+                }
+                else // Both quiet moves, so order moves according to history heuristic.
+                {
+                    return historyCounts[y.MovedPiece(), y.DestinationSquare()] - historyCounts[x.MovedPiece(), x.DestinationSquare()];
+                }
+            }
+            else // X is capture move
+            {
+                if (yCapture == Position.EMPTY)
+                {
+                    return -1;
+                }
+                else // Both captures, so sort by MVV/LVA
+                {
+                    if (xCapture == yCapture) // Same victim so sort by attacker
+                    {
+                        
+                        return y.MovedPiece() - x.MovedPiece();
+                    }
+                    else // Different victims, so sort victim
+                    {
+                        return xCapture - yCapture;
+                    }
+                }
+            }
         }
     }
 }

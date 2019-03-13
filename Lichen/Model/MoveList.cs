@@ -27,42 +27,33 @@ namespace Lichen.Model
             return moves[index];
         }
 
-        
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Sort(Move? hashMove, Move k0, Move k1)
+        public void SwapMove(Move? move, ref int index)
         {
-            int cntr = 0;
-            if (hashMove != null)
+            if (move != null)
             {
-                for (int i = cntr; i < count; i++)
+                for (int i = index; i < count; i++)
                 {
-                    if (moves[i] == hashMove)
+                    if (moves[i] == move)
                     {
-                        moves[i] = moves[cntr];
-                        moves[cntr++] = (Move)hashMove;
-                        break;
+                        moves[i] = moves[index];
+                        moves[index++] = (Move)move;
+                        return;
                     }
                 }
             }
-            for (int i = cntr; i < count; i++)
-            {
-                if (moves[i] == k0)
-                {
-                    moves[i] = moves[cntr];
-                    moves[cntr++] = k0;
-                    break;
-                }
-            }
-            for (int i = cntr; i < count; i++)
-            {
-                if (moves[i] == k1)
-                {
-                    moves[i] = moves[cntr];
-                    moves[cntr] = k1;
-                    return;
-                }
-            }
+        }
+        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Sort(IComparer<Move> comparer, Move? hashMove, Move? killer0, Move? killer1)
+        {
+            int index = 0;
+            SwapMove(hashMove, ref index);
+            SwapMove(killer0, ref index);
+            SwapMove(killer1, ref index);
+
+            Array.Sort(moves, index, count - index, comparer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
