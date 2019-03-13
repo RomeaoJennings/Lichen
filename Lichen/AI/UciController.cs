@@ -94,7 +94,7 @@ namespace Lichen.AI
 
         private void DoSearch()
         {
-            search.IterativeDeepening(8, position);
+            search.IterativeDeepening(9, position);
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)

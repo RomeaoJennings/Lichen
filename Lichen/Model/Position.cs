@@ -525,7 +525,6 @@ namespace Lichen.Model
             playerToMove = Opponent();
             zobristHash ^= ZobristHash.WhiteToMoveHash;
             enPassentBitboard = boardState.EnPassentBitboard;
-            castleRights = boardState.CastleRights;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
