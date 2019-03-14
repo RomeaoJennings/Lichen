@@ -13,7 +13,8 @@ namespace LichenTests
             [TestMethod]
             public void StartingPositionHasZeroScore()
             {
-                Assert.AreEqual(0, Evaluate.EvaluatePosition(new Lichen.Model.Position()));
+                Evaluate eval = new Evaluate();
+                Assert.AreEqual(0, eval.EvaluatePosition(new Lichen.Model.Position()));
             }
         }
     }

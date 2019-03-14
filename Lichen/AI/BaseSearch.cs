@@ -19,6 +19,7 @@ namespace Lichen.AI
         public const int NULL_MOVE_REDUCTION = 2;
         public const int NUMBER_OF_KILLERS = 2;
 
+        private IEvaluator positionEvaluator;
         private long nodeCounter;
         private long nodesPerSecond;
         private Move[] principalVariation;
@@ -42,11 +43,13 @@ namespace Lichen.AI
         public BaseSearch()
         {
             transpositionTable = new TranspositionTable();
+            positionEvaluator = new Evaluate();
         }
 
         public BaseSearch(TranspositionTable tt)
         {
             transpositionTable = tt;
+            positionEvaluator = new Evaluate();
         }
 
 
@@ -281,7 +284,7 @@ namespace Lichen.AI
                 return 0;
             }
 
-            int standPat = Evaluate.EvaluatePosition(position);
+            int standPat = positionEvaluator.EvaluatePosition(position);
             if (standPat > alpha)
             {
                 alpha = standPat;

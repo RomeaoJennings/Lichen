@@ -11,12 +11,12 @@ namespace Lichen.AI
 {
     using Bitboard = UInt64;
 
-    public static class Evaluate
+    public class Evaluate : IEvaluator
     {
         private static readonly int[] materialValues = { 10000, 900, 500, 330, 310, 100, 0 };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EvaluatePosition(Position position)
+        public int EvaluatePosition(Position position)
         {
             int score = 0;
 
@@ -59,7 +59,7 @@ namespace Lichen.AI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EvaluateKnights(Position position, int color, int mobilityMultiplier, ref Bitboard destinationBitboard)
+        public int EvaluateKnights(Position position, int color, int mobilityMultiplier, ref Bitboard destinationBitboard)
         {
             Bitboard pieces = position.GetPieceBitboard(color, Position.KNIGHT);
             int score = 0;
@@ -74,7 +74,7 @@ namespace Lichen.AI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EvaluateSlidingPiece(Position position, int color, int pieceType, int materialValue, int mobilityMultiplier, ref Bitboard destinationBitboard)
+        public int EvaluateSlidingPiece(Position position, int color, int pieceType, int materialValue, int mobilityMultiplier, ref Bitboard destinationBitboard)
         {
             Bitboard pieces = position.GetPieceBitboard(color, pieceType);
             int score = 0;
