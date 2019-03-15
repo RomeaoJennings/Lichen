@@ -19,7 +19,7 @@ namespace Lichen.AI
         public const int NULL_MOVE_REDUCTION = 2;
         public const int NUMBER_OF_KILLERS = 2;
 
-        private IEvaluator positionEvaluator;
+        private readonly IEvaluator positionEvaluator;
         private long nodeCounter;
         private long nodesPerSecond;
         private Move[] principalVariation;
@@ -27,8 +27,11 @@ namespace Lichen.AI
         private Move[,] killerMoves;
         private int[,] historyCounts;
         private readonly TranspositionTable transpositionTable;
+        private bool mateIsFound;
+        private int mateDistance;
 
-
+        public bool MateIsFound { get { return mateIsFound; } }
+        public int MateDistance { get { return mateDistance; } }
         public long Nodes { get { return nodeCounter; } }
         public long NodesPerSecond { get { return nodesPerSecond; } }
         public Move[] PrincipalVariation { get { return principalVariation; } }
@@ -89,11 +92,15 @@ namespace Lichen.AI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void OnIterationCompleted(int ply, int score, bool searchComplete = false)
         {
+            if (mateIsFound)
+            {
+                score = mateDistance;
+            }
             EventHandler<SearchCompletedEventArgs> eventToCall = searchComplete ? SearchCompleted : IterationCompleted;
             if (eventToCall != null)
             {
                 eventToCall(this, new SearchCompletedEventArgs(
-                    ply + 1, score, principalVariation, nodeCounter, nodesPerSecond, transpositionTable.TableUsage));
+                    ply + 1, score, mateIsFound, principalVariation, nodeCounter, nodesPerSecond, transpositionTable.TableUsage));
             }
         }
 
@@ -104,6 +111,7 @@ namespace Lichen.AI
             stopwatch.Start();
 
             transpositionTable.NewSearch(); // Increment TT epoch to remove ancient nodes upon collisions with new ones.
+            mateIsFound = false;
             int score;
             nodeCounter = 1;
             int alpha = INITIAL_ALPHA;
@@ -152,6 +160,33 @@ namespace Lichen.AI
                 transpositionTable.AddEntry(position.Zobrist, alpha, NodeType.Exact, depth + 1, bestMove);
                 nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
                 ExtractPrincipalVariation(depth + 1, position);
+
+                if (CheckmateFound(ref alpha))
+                {
+                    if (alpha > 40000)
+                    {
+                        int matePly = 1 + depth - alpha - CHECKMATE;
+                        if (maxPly > matePly) // Limit search to mate depth
+                        {
+                            maxPly = matePly;
+                        }
+                        matePly++;
+                        matePly >>= 1;
+                        mateIsFound = true;
+                        mateDistance = matePly;
+                    }
+                    else
+                    {
+                        int matePly =  alpha - CHECKMATE - depth + 1;
+                        if (maxPly > -matePly)
+                        {
+                            maxPly = -matePly;
+                        }
+                        matePly >>= 1;
+                        mateIsFound = true;
+                        mateDistance = matePly;
+                    }
+                }
                 OnIterationCompleted(depth, alpha);
             }
             stopwatch.Stop();
@@ -363,6 +398,12 @@ namespace Lichen.AI
             {
                 killerMoves[depth, 1] = move;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CheckmateFound(ref int score)
+        {
+            return score > 40000 || score < -40000;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

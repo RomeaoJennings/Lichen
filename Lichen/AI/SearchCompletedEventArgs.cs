@@ -12,7 +12,9 @@ namespace Lichen.AI
         public long NodesPerSecond { get; private set; }
         public long Nodes { get; private set; }
         public int HashFull { get; private set; }
-        public SearchCompletedEventArgs(int ply, int score, Move[] principalVariation, long nodes, long nps, int hashFullPercent)
+        public bool IsMateScore { get; private set; }
+
+        public SearchCompletedEventArgs(int ply, int score, bool isMate, Move[] principalVariation, long nodes, long nps, int hashFullPercent)
         {
             Ply = ply;
             Score = score;
@@ -20,6 +22,7 @@ namespace Lichen.AI
             Nodes = nodes;
             NodesPerSecond = nps;
             HashFull = hashFullPercent;
+            IsMateScore = isMate;
         }
     }
 }

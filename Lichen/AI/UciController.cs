@@ -118,10 +118,15 @@ namespace Lichen.AI
             message.Append("info depth ");
             message.Append(e.Ply);
             message.Append(" score ");
-
-            message.Append("cp ");
+            if (e.IsMateScore)
+            {
+                message.Append("mate ");
+            }
+            else
+            {
+                message.Append("cp ");
+            }
             message.Append(e.Score);
-
             message.Append(" nodes ");
             message.Append(e.Nodes);
             message.Append(" nps ");

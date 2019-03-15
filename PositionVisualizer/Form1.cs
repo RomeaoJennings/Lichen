@@ -12,7 +12,7 @@ namespace UserInterface
     public partial class Form1 : Form
     {
         ChessBoardController cbc;
-        Position position = new Position();
+        Position position = Position.FromFen("2r1kr2/1p3pQp/p3qbp1/8/PP1R4/8/1P3PPP/4R1K1 w - -");
         BaseSearch search;
 
         public Form1()

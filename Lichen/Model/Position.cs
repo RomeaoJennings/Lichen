@@ -210,6 +210,7 @@ namespace Lichen.Model
                     result.fullMoveNumber = int.Parse(elements[5]);
                 }
                 result.allPiecesBitboard = result.pieces[WHITE][ALL_PIECES] | result.pieces[BLACK][ALL_PIECES];
+                result.zobristHash = result.CalculateZobrist();
                 result.threeMoveRepetition = new RepetitionTable();
                 result.threeMoveRepetition.AddPosition(result.zobristHash);
                 return result;
