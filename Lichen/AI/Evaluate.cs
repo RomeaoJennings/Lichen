@@ -18,6 +18,9 @@ namespace Lichen.AI
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int EvaluatePosition(Position position)
         {
+
+    
+
             int score = 0;
 
             Bitboard notWhite = ~position.GetPieceBitboard(Position.WHITE, Position.ALL_PIECES);

@@ -129,6 +129,7 @@ namespace Lichen.Model
         public Position()
         {
             NewGame();
+            Debug.Assert(zobristHash == CalculateZobrist());
         }
 
         public Position(Position copy)
@@ -319,7 +320,7 @@ namespace Lichen.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoMove(Move move)
         {
-
+            Debug.Assert(zobristHash == CalculateZobrist());
             halfMoveClock++;
 
             int opponent = Opponent();
@@ -424,6 +425,7 @@ namespace Lichen.Model
             UpdateCastleRights(ref originSquare, ref destinationSquare);
             playerToMove = opponent;
             zobristHash ^= ZobristHash.WhiteToMoveHash;
+            Debug.Assert(zobristHash == CalculateZobrist());
             threeMoveRepetition.AddPosition(zobristHash);
             if (playerToMove == WHITE)
                 fullMoveNumber++;
@@ -433,6 +435,8 @@ namespace Lichen.Model
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UndoMove(BoardState previousState)
         {
+            Debug.Assert(zobristHash == CalculateZobrist());
+
             threeMoveRepetition.RemovePosition(zobristHash);
             // Reset prior state from BoardState object
             Move move = previousState.Move;
@@ -508,23 +512,33 @@ namespace Lichen.Model
                 }
             }
 
+            Debug.Assert(zobristHash == CalculateZobrist());
             allPiecesBitboard = pieces[WHITE][ALL_PIECES] | pieces[BLACK][ALL_PIECES];
         }
 
         public BoardState DoNullMove()
         {
+            Debug.Assert(zobristHash == CalculateZobrist());
             BoardState bs = new BoardState(new Move(), this);
-            enPassentBitboard = 0;
+            if (enPassentBitboard != 0)
+            {
+                zobristHash ^= ZobristHash.EnPassentSquareHashes[enPassentBitboard.BitScanForward()];
+                enPassentBitboard = 0;
+            }
             playerToMove = Opponent();
             zobristHash ^= ZobristHash.WhiteToMoveHash;
+            Debug.Assert(zobristHash == CalculateZobrist());
             return bs;
         }
 
         public void UndoNullMove(BoardState boardState)
         {
+            Debug.Assert(zobristHash == CalculateZobrist());
             playerToMove = Opponent();
-            zobristHash ^= ZobristHash.WhiteToMoveHash;
             enPassentBitboard = boardState.EnPassentBitboard;
+
+            zobristHash = boardState.Zobrist;
+            Debug.Assert(zobristHash == CalculateZobrist());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1270,6 +1284,37 @@ namespace Lichen.Model
                     }
                 }
             }
+        }
+
+        // Used for debugging
+        public ulong CalculateZobrist()
+        {
+            ulong result = playerToMove == WHITE ? ZobristHash.WhiteToMoveHash : 0;
+
+            for (int piece = 0; piece < 6; piece++)
+            {
+                for (int side = 0; side < 2; side++)
+                {
+                    Bitboard curr = pieces[side][piece];
+                    while (curr != 0)
+                    {
+                        int sq = curr.BitScanForward();
+                        Bitboards.PopLsb(ref curr);
+                        result ^= ZobristHash.PieceHashes[side][piece][sq];
+                    }
+                }
+            }
+            if (castleRights.WhiteKing)
+                result ^= ZobristHash.CastleWhiteKingHash;
+            if (castleRights.WhiteQueen)
+                result ^= ZobristHash.CastleWhiteQueenHash;
+            if (castleRights.BlackKing)
+                result ^= ZobristHash.CastleBlackKingHash;
+            if (castleRights.BlackQueen)
+                result ^= ZobristHash.CastleBlackQueenHash;
+            if (enPassentBitboard != 0)
+                result ^= ZobristHash.EnPassentSquareHashes[enPassentBitboard.BitScanForward()];
+            return result;
         }
     }
 }
