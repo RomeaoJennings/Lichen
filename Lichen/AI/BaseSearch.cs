@@ -43,13 +43,13 @@ namespace Lichen.AI
         public BaseSearch()
         {
             transpositionTable = new TranspositionTable();
-            positionEvaluator = new Evaluate();
+            positionEvaluator = new PawnEvaluate();
         }
 
         public BaseSearch(TranspositionTable tt)
         {
             transpositionTable = tt;
-            positionEvaluator = new Evaluate();
+            positionEvaluator = new PawnEvaluate();
         }
 
 

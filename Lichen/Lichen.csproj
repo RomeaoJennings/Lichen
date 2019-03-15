@@ -66,6 +66,7 @@
     <Compile Include="AI\BaseSearch.cs" />
     <Compile Include="AI\IEvaluator.cs" />
     <Compile Include="AI\NodeType.cs" />
+    <Compile Include="AI\PawnEvaluate.cs" />
     <Compile Include="AI\PvNode.cs" />
     <Compile Include="AI\PvTable.cs" />
     <Compile Include="AI\TableEntry.cs" />

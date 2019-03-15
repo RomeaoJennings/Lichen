@@ -32,6 +32,9 @@ namespace Lichen.Model
         public static readonly Bitboard[] KnightBitboards = InitKnightBitboards();
         public static readonly Bitboard[,] PawnBitboards = InitPawnBitboards();
 
+        public static readonly Bitboard[] IsolatedPawnBitboards = InitIsolatedPawnBitboards();
+        public static readonly Bitboard[,] PassedPawnBitboards = InitPassedPawnBitboards();
+
         public static readonly CastleInfo[][] CastleInfo = InitCastleRookBitboards();
         public static readonly int[] EnPassentOffset = { -8, 8 };
 
@@ -352,6 +355,51 @@ namespace Lichen.Model
                     result[BLACK, i] = GenerateBitboardFromOffsets(i, 1, offsets[BLACK]);
                 }
             }
+            return result;
+        }
+
+        private static Bitboard[] InitIsolatedPawnBitboards()
+        {
+            Bitboard[] result = new Bitboard[NUM_SQUARES];
+
+            for (int i=0;i<NUM_SQUARES;i++)
+            {
+                Bitboard current = 0;
+                int column = GetColumn(i);
+                if (column != 0) // Not A File
+                {
+                    current |= ColumnBitboards[i + 1];
+                }
+                if (column != 7) // Not H File
+                {
+                    current |= ColumnBitboards[i - 1];
+                }
+                result[i] = current;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[,] InitPassedPawnBitboards()
+        {
+            Bitboard[,] result = new Bitboard[2, NUM_SQUARES];
+
+            for (int i=0;i<NUM_SQUARES;i++)
+            {
+                Bitboard columnsBitboard = ColumnBitboards[i] | IsolatedPawnBitboards[i];
+                columnsBitboard &= ~RowBitboards[i];
+
+                Bitboard whiteMask = 0;
+                int currRow = i + 8;
+                while (currRow < NUM_SQUARES)
+                {
+                    whiteMask |= RowBitboards[currRow];
+                    currRow += 8;
+                }
+                result[WHITE, i] = columnsBitboard & whiteMask;
+                result[BLACK, i] = columnsBitboard & ~whiteMask;
+            }
+
             return result;
         }
 
