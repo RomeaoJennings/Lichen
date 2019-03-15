@@ -63,7 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AI\BaseSearch.cs" />
+    <Compile Include="AI\Search.cs" />
     <Compile Include="AI\IEvaluator.cs" />
     <Compile Include="AI\NodeType.cs" />
     <Compile Include="AI\PawnEvaluate.cs" />

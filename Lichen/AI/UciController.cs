@@ -11,7 +11,7 @@ namespace Lichen.AI
     public class UciController
     {
         private Position position;
-        private readonly BaseSearch search;
+        private readonly Search search;
 
         const string engineName = "Lichen v. 1.0.0";
         const string author = "Romeao Jennings";
@@ -19,7 +19,7 @@ namespace Lichen.AI
         public UciController()
         {
             position = new Position();
-            search = new BaseSearch();
+            search = new Search();
             search.IterationCompleted += SendIterationInfo;
             search.SearchCompleted += BestMove;
 

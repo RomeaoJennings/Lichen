@@ -11,7 +11,7 @@ namespace Lichen.AI
 {
     using Bitboard = UInt64;
 
-    public class BaseSearch : IComparer<Move>
+    public class Search : IComparer<Move>
     {
         public const int INITIAL_ALPHA = -10000000;
         public const int INITIAL_BETA = 10000000;
@@ -43,13 +43,13 @@ namespace Lichen.AI
 #pragma warning restore S3264 // Events should be invoked
 
 
-        public BaseSearch()
+        public Search()
         {
             transpositionTable = new TranspositionTable();
             positionEvaluator = new PawnEvaluate();
         }
 
-        public BaseSearch(TranspositionTable tt)
+        public Search(TranspositionTable tt)
         {
             transpositionTable = tt;
             positionEvaluator = new PawnEvaluate();

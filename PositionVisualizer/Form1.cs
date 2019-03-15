@@ -13,11 +13,11 @@ namespace UserInterface
     {
         ChessBoardController cbc;
         Position position = Position.FromFen("2r1kr2/1p3pQp/p3qbp1/8/PP1R4/8/1P3PPP/4R1K1 w - -");
-        BaseSearch search;
+        Search search;
 
         public Form1()
         {
-            search = new BaseSearch();
+            search = new Search();
             search.IterationCompleted += Search_IterationCompleted;
             search.SearchCompleted += Search_SearchCompleted;
 
