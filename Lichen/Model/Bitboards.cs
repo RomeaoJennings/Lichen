@@ -34,6 +34,7 @@ namespace Lichen.Model
 
         public static readonly Bitboard[] IsolatedPawnBitboards = InitIsolatedPawnBitboards();
         public static readonly Bitboard[,] PassedPawnBitboards = InitPassedPawnBitboards();
+        public static readonly Bitboard[,] OutpostMasks = InitOutpostMasks();
 
         public static readonly CastleInfo[][] CastleInfo = InitCastleRookBitboards();
         public static readonly int[] EnPassentOffset = { -8, 8 };
@@ -398,6 +399,21 @@ namespace Lichen.Model
                 }
                 result[WHITE, i] = columnsBitboard & whiteMask;
                 result[BLACK, i] = columnsBitboard & ~whiteMask;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[,] InitOutpostMasks()
+        {
+            Bitboard[,] result = new Bitboard[2, NUM_SQUARES];
+
+            for (int color = 0; color < 2; color++)
+            {
+                for (int square = 0; square < NUM_SQUARES; square++)
+                {
+                    result[color, square] = PassedPawnBitboards[color, square] & IsolatedPawnBitboards[square];
+                }
             }
 
             return result;
