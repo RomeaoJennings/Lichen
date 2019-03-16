@@ -99,7 +99,7 @@ namespace Lichen.AI
             int maxPly;
             if (elements.Length > 2 && elements[1] == "depth" && int.TryParse(elements[2], out maxPly) && maxPly > 0)
             {
-                search.IterativeDeepening(200, 10000, position);
+                search.IterativeDeepening(200, 5000, position);
             }
             else
             {

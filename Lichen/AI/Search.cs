@@ -185,10 +185,7 @@ namespace Lichen.AI
                         if (alpha > 40000)
                         {
                             int matePly = 1 + depth - alpha - CHECKMATE;
-                            if (maxPly > matePly) // Limit search to mate depth
-                            {
-                                maxPly = matePly;
-                            }
+                            
                             matePly++;
                             matePly >>= 1;
                             mateIsFound = true;
@@ -197,10 +194,7 @@ namespace Lichen.AI
                         else
                         {
                             int matePly = alpha - CHECKMATE - depth + 1;
-                            if (maxPly > -matePly)
-                            {
-                                maxPly = -matePly;
-                            }
+                           
                             matePly >>= 1;
                             mateIsFound = true;
                             mateDistance = matePly;
