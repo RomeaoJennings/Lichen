@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Timers;
 using System.Threading.Tasks;
 using Lichen.Model;
 
@@ -23,12 +24,16 @@ namespace Lichen.AI
         private long nodeCounter;
         private long nodesPerSecond;
         private Move[] principalVariation;
+        private int lastScore;
+        private int lastSearchDepth;
         private int[,,] killerCounts;
         private Move[,] killerMoves;
         private int[,] historyCounts;
         private readonly TranspositionTable transpositionTable;
         private bool mateIsFound;
         private int mateDistance;
+        private bool outOfSearchTime;
+        private Timer searchTimer;
 
         public bool MateIsFound { get { return mateIsFound; } }
         public int MateDistance { get { return mateDistance; } }
@@ -54,7 +59,6 @@ namespace Lichen.AI
             transpositionTable = tt;
             positionEvaluator = new PawnEvaluate();
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExtractPrincipalVariation(int length, Position position)
@@ -105,93 +109,120 @@ namespace Lichen.AI
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Move IterativeDeepening(int maxPly, Position position)
+        public Move IterativeDeepening(int maxPly, int maxTimeMs, Position position)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            transpositionTable.NewSearch(); // Increment TT epoch to remove ancient nodes upon collisions with new ones.
-            mateIsFound = false;
-            int score;
-            nodeCounter = 1;
+            outOfSearchTime = false;
+            searchTimer = new Timer();
+            if (maxTimeMs > 0) // Zero or negative if no max time
+            {
+                searchTimer.Interval = maxTimeMs;
+                searchTimer.Elapsed += OnSearchTimeout;
+                searchTimer.Start();
+            }
+
             int alpha = INITIAL_ALPHA;
             Move bestMove = new Move();
-            
-            Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
-            MoveList moves = position.GetAllMoves();
-            int moveCount = moves.Count;
 
-            for (int depth = 0; depth < maxPly; depth++)
+            try
             {
-                killerCounts = new int[maxPly, 64, 64];
-                killerMoves = new Move[maxPly, NUMBER_OF_KILLERS];
-                historyCounts = new int[6, 64];
+                transpositionTable.NewSearch(); // Increment TT epoch to remove ancient nodes upon collisions with new ones.
+                mateIsFound = false;
+                int score;
+                nodeCounter = 1;
 
-                int beta = INITIAL_BETA;
-                alpha = INITIAL_ALPHA;
+                Bitboard pinnedPiecesBitboard = position.GetPinnedPiecesBitboard();
+                MoveList moves = position.GetAllMoves();
+                int moveCount = moves.Count;
 
-                Move? hashMove = null;
-                TableEntry ttEntry;
-                if (transpositionTable.GetEntry(position.Zobrist, out ttEntry) && ttEntry.BestMove != Move.EmptyMove)
+                for (int depth = 0; depth < maxPly; depth++)
                 {
-                    hashMove = ttEntry.BestMove;
-                }
+                    killerCounts = new int[maxPly, 64, 64];
+                    killerMoves = new Move[maxPly, NUMBER_OF_KILLERS];
+                    historyCounts = new int[6, 64];
 
-                moves.Sort(this, hashMove, null, null);
-                for (int i = 0; i < moveCount; i++)
-                {
-                    Move move = moves.Get(i);
-                    if (position.IsLegalMove(move, pinnedPiecesBitboard))
+                    int beta = INITIAL_BETA;
+                    alpha = INITIAL_ALPHA;
+
+                    Move? hashMove = null;
+                    TableEntry ttEntry;
+                    if (transpositionTable.GetEntry(position.Zobrist, out ttEntry) && ttEntry.BestMove != Move.EmptyMove)
                     {
-                        BoardState previousState = new BoardState(move, position);
-                        position.DoMove(move);
+                        hashMove = ttEntry.BestMove;
+                    }
 
-                        score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth);
-
-
-                        position.UndoMove(previousState);
-                        if (score > alpha)
+                    moves.Sort(this, hashMove, null, null);
+                    for (int i = 0; i < moveCount; i++)
+                    {
+                        Move move = moves.Get(i);
+                        if (position.IsLegalMove(move, pinnedPiecesBitboard))
                         {
-                            bestMove = move;
-                            alpha = score;
+                            BoardState previousState = new BoardState(move, position);
+                            position.DoMove(move);
+
+                            score = -AlphaBeta(position, 0 - beta, 0 - alpha, depth);
+
+
+                            position.UndoMove(previousState);
+                            if (score > alpha)
+                            {
+                                bestMove = move;
+                                alpha = score;
+                            }
                         }
                     }
-                }
-                transpositionTable.AddEntry(position.Zobrist, alpha, NodeType.Exact, depth + 1, bestMove);
-                nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
-                ExtractPrincipalVariation(depth + 1, position);
+                    transpositionTable.AddEntry(position.Zobrist, alpha, NodeType.Exact, depth + 1, bestMove);
+                    nodesPerSecond = Nodes * 1000 / Math.Max(1L, stopwatch.ElapsedMilliseconds);
 
-                if (CheckmateFound(ref alpha))
-                {
-                    if (alpha > 40000)
+                    lastScore = alpha;
+                    lastSearchDepth = depth + 1;
+                    ExtractPrincipalVariation(lastSearchDepth, position);
+
+                    if (CheckmateFound(ref alpha))
                     {
-                        int matePly = 1 + depth - alpha - CHECKMATE;
-                        if (maxPly > matePly) // Limit search to mate depth
+                        if (alpha > 40000)
                         {
-                            maxPly = matePly;
+                            int matePly = 1 + depth - alpha - CHECKMATE;
+                            if (maxPly > matePly) // Limit search to mate depth
+                            {
+                                maxPly = matePly;
+                            }
+                            matePly++;
+                            matePly >>= 1;
+                            mateIsFound = true;
+                            mateDistance = matePly;
                         }
-                        matePly++;
-                        matePly >>= 1;
-                        mateIsFound = true;
-                        mateDistance = matePly;
-                    }
-                    else
-                    {
-                        int matePly =  alpha - CHECKMATE - depth + 1;
-                        if (maxPly > -matePly)
+                        else
                         {
-                            maxPly = -matePly;
+                            int matePly = alpha - CHECKMATE - depth + 1;
+                            if (maxPly > -matePly)
+                            {
+                                maxPly = -matePly;
+                            }
+                            matePly >>= 1;
+                            mateIsFound = true;
+                            mateDistance = matePly;
                         }
-                        matePly >>= 1;
-                        mateIsFound = true;
-                        mateDistance = matePly;
                     }
+                    OnIterationCompleted(depth, alpha);
                 }
-                OnIterationCompleted(depth, alpha);
             }
-            stopwatch.Stop();
-            OnIterationCompleted(maxPly - 1, alpha, true);
+            catch (TimeoutException) { }
+            finally
+            {
+                stopwatch.Stop();
+                OnIterationCompleted(lastSearchDepth, lastScore, true);
+                searchTimer.Stop();
+                searchTimer.Dispose();
+            }
             return bestMove;
+        }
+
+        private void OnSearchTimeout(object sender, ElapsedEventArgs e)
+        {
+            outOfSearchTime = true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -203,6 +234,11 @@ namespace Lichen.AI
             bool nullMoveAllowed = true
         )
         {
+            if (outOfSearchTime)
+            {
+                throw new TimeoutException();
+            }
+
             int score;
 
             if (position.PositionIsThreefoldDraw()) // TODO: Add 50 move draw.

@@ -12,7 +12,7 @@ namespace UserInterface
     public partial class Form1 : Form
     {
         ChessBoardController cbc;
-        Position position = Position.FromFen("2r1kr2/1p3pQp/p3qbp1/8/PP1R4/8/1P3PPP/4R1K1 w - -");
+        Position position = new Position();
         Search search;
 
         public Form1()
@@ -43,8 +43,24 @@ namespace UserInterface
 
         private void DoSearch()
         {
-            int ply = (int)numericUpDown1.Value;
-            search.IterativeDeepening(ply, position);
+            Position p = new Position(position);
+            if (radioMaxPly.Checked)
+            {
+                int ply = (int)numericUpDown1.Value;
+                search.IterativeDeepening(ply, 0, p);
+            }
+            else
+            {
+                int time;
+                if (int.TryParse(txtTime.Text, out time) && time > 0)
+                {
+                    search.IterativeDeepening(200, time, p);
+                }
+                else
+                {
+                    MessageBox.Show("Invalid time setting.");
+                }
+            }
         }
 
         private void Search_SearchCompleted(object sender, SearchCompletedEventArgs e)
