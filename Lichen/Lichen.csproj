@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\Evaluate2.cs" />
     <Compile Include="AI\Search.cs" />
     <Compile Include="AI\IEvaluator.cs" />
     <Compile Include="AI\NodeType.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="AI\PvNode.cs" />
     <Compile Include="AI\PvTable.cs" />
     <Compile Include="AI\TableEntry.cs" />
+    <Compile Include="AI\TimeController.cs" />
     <Compile Include="AI\TranspositionTable.cs" />
     <Compile Include="Model\Bitboards.cs" />
     <Compile Include="Model\Position.cs" />

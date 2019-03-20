@@ -51,7 +51,7 @@ namespace Lichen.AI
         public Search()
         {
             transpositionTable = new TranspositionTable();
-            positionEvaluator = new PawnEvaluate();
+            positionEvaluator = new Evaluate2();
         }
 
         public Search(TranspositionTable tt)
