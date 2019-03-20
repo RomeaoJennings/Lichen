@@ -60,7 +60,7 @@ namespace Lichen.AI
                         }
                         else
                         {
-                            DoSearch(elements);
+                            DoSearch(line);
                         }
                         break;
                     case "isready":
@@ -94,17 +94,20 @@ namespace Lichen.AI
             Console.WriteLine("readyok");
         }
 
-        private void DoSearch(string[] elements)
+        private void DoSearch(string command)
         {
+            string[] elements = command.Split(' ');
             int maxPly;
             if (elements.Length > 2 && elements[1] == "depth" && int.TryParse(elements[2], out maxPly) && maxPly > 0)
             {
-                search.IterativeDeepening(200, 5000, position);
+                search.IterativeDeepening(maxPly, 0, position);
             }
             else
             {
-                search.IterativeDeepening(200, 10000, position);
+                TimeController tc = TimeController.FromUciCommand(command);
+                search.IterativeDeepening(150, tc.GetTimeToSearch(position), position);
             }
+            
         }
 
         private void BestMove(object sender, SearchCompletedEventArgs e)

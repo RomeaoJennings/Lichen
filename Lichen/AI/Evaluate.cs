@@ -13,7 +13,7 @@ namespace Lichen.AI
 
     public class Evaluate : IEvaluator
     {
-        private static readonly int[] materialValues = { 10000, 900, 500, 330, 310, 100, 0 };
+        private static readonly int[] materialValues = { 10000, 900, 500, 350, 325, 100, 0 };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int EvaluatePosition(Position position)
